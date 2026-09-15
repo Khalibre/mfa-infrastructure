@@ -1,0 +1,7 @@
+- name: Obtain certificate
+  tags: get_cert
+  ansible.builtin.include_tasks: 'pull_cert.yml'
+
+- name: Obtain database
+  tags: get_db
+  ansible.builtin.include_tasks: 'obtain_db.yml'

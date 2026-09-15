@@ -1,0 +1,44 @@
+---
+ansible_hashi_vault_url: https://kms.khalibre.com
+approle_role_id: "{{ vault_approle_role_id }}"
+approle_secret_id: "{{ vault_approle_secret_id }}"
+hcp_vault_cw_common_role_id: "{{ vault_approle_role_id }}"
+hcp_vault_cw_common_secret_id: "{{ vault_approle_secret_id }}"
+vault_cert_mount: certimate
+vault_cert_path: crosswired.me
+cert_dir: '{{ project_dir | default(playbook_dir ~ "/..") }}/certs'
+truststore_dir: '{{ project_dir | default(playbook_dir ~ "/..") }}/certs/truststore'
+
+domain_name: crosswired.me
+keycloak_host: "keycloak-mfa.{{ domain_name }}"
+pi_host: "pi-mfa.{{ domain_name }}"
+
+traefik_image: traefik:v3.6.2
+mariadb_image: mariadb:11.8.8
+keycloak_image: quay.io/keycloak/keycloak:26.1.3
+privacyidea_image: khalibre/privacyidea:3.12.2
+
+traefik_http_port: 80
+traefik_https_port: 443
+traefik_dashboard_port: 8080
+mariadb_port: 3306
+
+keycloak_db_name: keycloak
+keycloak_db_user: keycloak
+pi_db_name: privacyidea
+pi_db_user: privacyidea
+
+keycloak_admin: admin
+pi_admin_user: admin
+pi_skip_bootstrap: false
+pi_superuser_realm: "admin,platform"
+
+mysql_root_password: "{{ vault_mysql_root_password }}"
+keycloak_db_password: "{{ vault_keycloak_db_password }}"
+pi_db_password: "{{ vault_pi_db_password }}"
+keycloak_admin_password: "{{ vault_keycloak_admin_password }}"
+pi_admin_password: "{{ vault_pi_admin_password }}"
+pi_pepper: "{{ vault_pi_pepper }}"
+pi_secret_key: "{{ vault_pi_secret_key }}"
+
+root_ca_cert: "{{ vault_root_ca_cert }}"

@@ -1,0 +1,137 @@
+[env]
+_.file = ".env"
+
+[tasks.start]
+description = "Prepare all prerequisites (Ansible) and start stack"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+# 1. Run Ansible to generate .env, truststore certs, and wildcard TLS cert
+if [ -f playbook.yml ] && [ -f ansible/group_vars/all/vault.yml ]; then
+  ansible_ee="${ANSIBLE_EE_IMAGE:-khalibre/ansible-ee:2.20.2-2026-3}"
+  vault_pass_file="${ANSIBLE_VAULT_PASSWORD_FILE:-/etc/ansible/.ansible-vault-common.py}"
+  docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -w /project \
+    -v "$PWD:/project" \
+    -v "${vault_pass_file}:${vault_pass_file}:ro" \
+    -e "ANSIBLE_VAULT_PASSWORD_FILE=${vault_pass_file}" \
+    -e ANSIBLE_ROLES_PATH=/project/ansible/roles \
+    "${ansible_ee}" \
+    ansible-playbook playbook.yml \
+      -e @ansible/group_vars/all/vars.yml \
+      -e @ansible/group_vars/all/vault.yml \
+      -e project_dir=/project
+fi
+
+# 2. Source environment and bring up stack
+set -a; source .env; set +a
+docker compose up -d
+
+echo "--------------------------------------------------------"
+echo "Keycloak:    https://${KEYCLOAK_HOST}"
+echo "PrivacyIDEA: https://${PI_HOST}"
+echo "Traefik:     http://localhost:${TRAEFIK_DASHBOARD_PORT}"
+echo "--------------------------------------------------------"
+
+# 3. Notify user about manual DB restore
+db_file="databases/mariadb_backup_20260914_164148.tar.gz"
+if [ -f "$db_file" ]; then
+  echo ""
+  echo "=> A database backup was downloaded from S3 to:"
+  echo "   $db_file"
+  echo "=> To restore this backup into MariaDB, run:"
+  echo "   mise run db:restore $db_file"
+fi
+'''
+
+[tasks.down]
+description = "Stop and remove the stack (keeps volumes)"
+run = "docker compose down"
+
+[tasks.stop]
+description = "Stop the stack"
+run = "docker compose stop"
+
+[tasks.restart]
+description = "Restart the stack"
+run = "docker compose restart"
+
+[tasks."logs:keycloak"]
+description = "Follow keycloak logs"
+run = "docker logs -f mfa-keycloak"
+
+[tasks."logs:privacyidea"]
+description = "Follow privacyidea logs"
+run = "docker logs -f mfa-privacyidea"
+
+[tasks."logs:mariadb"]
+description = "Follow mariadb logs"
+run = "docker logs -f mfa-mariadb"
+
+[tasks.ps]
+description = "List stack containers"
+run = "docker compose ps"
+
+[tasks.pull]
+description = "Pull all images"
+run = "docker compose pull"
+
+[tasks.destroy]
+description = "Stop and remove the stack, volumes, generated certificates, and database backups"
+alias = "clean"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+docker compose down -v
+rm -f certs/wildcard.crt certs/wildcard.key certs/truststore/*.crt
+rm -rf databases/*.tar.gz
+echo "Removed stack, volumes, generated certificates, and database backups."
+'''
+
+[tasks."start:keycloak"]
+description = "Start Keycloak service"
+run = "docker compose up -d keycloak"
+
+[tasks."start:privacyidea"]
+description = "Start PrivacyIDEA service"
+run = "docker compose up -d privacyidea"
+
+[tasks."db:export"]
+description = "Export all MariaDB databases to a compressed tar.gz file"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+set -a; source .env; set +a
+mkdir -p database
+timestamp=$(date +"%Y%m%d_%H%M%S")
+sqlfile="mariadb_backup_${timestamp}.sql"
+tarfile="database/mariadb_backup_${timestamp}.tar.gz"
+echo "Exporting databases..."
+docker exec mfa-mariadb mariadb-dump -uroot -p"${MYSQL_ROOT_PASSWORD}" --all-databases > "database/${sqlfile}"
+echo "Compressing to ${tarfile}..."
+tar -czvf "${tarfile}" -C database "${sqlfile}"
+rm "database/${sqlfile}"
+echo "Export complete: ${tarfile}"
+'''
+
+[tasks."db:restore"]
+description = "Restore MariaDB databases from a compressed tar.gz file"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+set -a; source .env; set +a
+if [ $# -eq 0 ]; then
+  echo "Usage: mise run db:restore <backup_file.tar.gz>"
+  exit 1
+fi
+infile="$1"
+if [ ! -f "${infile}" ]; then
+  echo "Error: File not found: ${infile}"
+  exit 1
+fi
+echo "Restoring databases from ${infile}..."
+tar -xzvOf "${infile}" | docker exec -i mfa-mariadb mariadb -uroot -p"${MYSQL_ROOT_PASSWORD}"
+echo "Restore complete."
+'''

@@ -1,0 +1,41 @@
+---
+- name: Generate Vault token
+  ansible.builtin.set_fact:
+    login_data: "{{ lookup('community.hashi_vault.vault_login', url=ansible_hashi_vault_url, auth_method='approle', role_id=hcp_vault_cw_common_role_id, secret_id=hcp_vault_cw_common_secret_id, retries=2) }}"
+  no_log: true
+  tags: database, get_db
+
+- name: Generate AWS credentials from HCP Vault
+  tags: aws_s3, get_module
+  community.hashi_vault.vault_read:
+    url: '{{ ansible_hashi_vault_url }}'
+    path: aws/creds/cw-repo-read-only
+    retries: 2
+    token: '{{ login_data.auth.client_token }}'
+  register: aws_creds
+  no_log: true
+
+- name: Wait for AWS credentials to be active
+  tags: aws_s3, get_module
+  ansible.builtin.wait_for:
+    timeout: 15
+
+- name: Ensure databases directory exists
+  ansible.builtin.file:
+    path: '{{ project_dir }}/databases'
+    state: directory
+    mode: '0755'
+  tags: database, get_db
+
+- name: Obtain Mariadb databases
+  amazon.aws.s3_object:
+    region: 'ap-southeast-1'
+    aws_access_key: '{{ aws_creds.data.data.access_key }}'
+    aws_secret_key: '{{ aws_creds.data.data.secret_key }}'
+    bucket: 'repository.crosswired.com'
+    object: 'mfa-db-backup/mariadb_backup_20260914_164148.tar.gz'
+    mode: 'get'
+    overwrite: different
+    dest: '{{ project_dir }}/databases/mariadb_backup_20260914_164148.tar.gz'
+  tags: database, get_db
+

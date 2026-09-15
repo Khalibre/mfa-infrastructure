@@ -1,0 +1,55 @@
+---
+- name: Read the wildcard certificate from Vault
+  community.hashi_vault.vault_kv2_get:
+    url: '{{ ansible_hashi_vault_url }}'
+    engine_mount_point: '{{ vault_cert_mount }}'
+    path: '{{ vault_cert_path }}'
+    auth_method: approle
+    role_id: '{{ vault_approle_role_id }}'
+    secret_id: '{{ vault_approle_secret_id }}'
+  register: cert_secret
+  tags: vault,get_cert
+  no_log: true
+
+- name: Ensure certificate directory exists
+  ansible.builtin.file:
+    path: '{{ cert_dir }}'
+    state: directory
+    mode: '0755'
+  tags: certs,get_cert
+
+- name: Write certificate
+  ansible.builtin.copy:
+    content: "{{ cert_secret.secret.cert_fullchain }}"
+    dest: '{{ cert_dir }}/wildcard.crt'
+    mode: '0644'
+  tags: certs,get_cert
+
+- name: Write private key
+  ansible.builtin.copy:
+    content: "{{ cert_secret.secret.private_key }}"
+    dest: '{{ cert_dir }}/wildcard.key'
+    mode: '0600'
+  tags: certs,get_cert
+
+- name: Render .env file from template
+  ansible.builtin.template:
+    src: .env.j2
+    dest: "{{ project_dir }}/.env"
+    mode: '0600'
+  tags: env,get_cert
+
+- name: Ensure truststore directory exists
+  ansible.builtin.file:
+    path: "{{ truststore_dir | default(project_dir ~ '/certs/truststore') }}"
+    state: directory
+    mode: '0755'
+  tags: certs,get_cert
+
+- name: Write root CA certificate
+  ansible.builtin.copy:
+    content: "{{ root_ca_cert }}"
+    dest: "{{ truststore_dir | default(project_dir ~ '/certs/truststore') }}/root-ca.crt"
+    mode: '0644'
+  when: root_ca_cert is defined and (root_ca_cert | trim | length > 0)
+  tags: certs,get_cert

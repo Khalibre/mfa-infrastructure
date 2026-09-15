@@ -1,0 +1,9 @@
+.env
+certs/*
+!certs/.gitkeep
+!certs/truststore/
+!certs/truststore/.gitkeep
+.ansible
+databases/*tar.gz
+.agents
+skills-lock.json
