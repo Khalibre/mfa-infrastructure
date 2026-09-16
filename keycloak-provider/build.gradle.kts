@@ -23,6 +23,7 @@ dependencies {
     compileOnly("org.keycloak:keycloak-server-spi-private:$keycloakVersion")
     compileOnly("org.keycloak:keycloak-core:$keycloakVersion")
     compileOnly("org.jboss.logging:jboss-logging:$jbossLoggingVersion")
+    compileOnly("jakarta.ws.rs:jakarta.ws.rs-api:3.1.0")
 }
 
 tasks.withType<Test> {
