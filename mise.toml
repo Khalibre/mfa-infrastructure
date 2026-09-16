@@ -135,3 +135,34 @@ echo "Restoring databases from ${infile}..."
 tar -xzvOf "${infile}" | docker exec -i mfa-mariadb mariadb -uroot -p"${MYSQL_ROOT_PASSWORD}"
 echo "Restore complete."
 '''
+
+[tasks."build:keycloak-provider"]
+description = "Build the Keycloak provider JAR (runs tests and assembles into keycloak-provider/build/libs)"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+( cd keycloak-provider && ./gradlew --console=plain build )
+echo ""
+echo "=> Built provider JAR:"
+ls -1 keycloak-provider/build/libs/*.jar
+'''
+
+[tasks."deploy:keycloak-provider"]
+description = "Build the provider JAR and deploy it into the running Keycloak container"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+# 1. Build the provider
+echo "==> Building keycloak-provider..."
+( cd keycloak-provider && ./gradlew --console=plain build )
+
+# 2. The JAR is already visible inside the container via the bind mount
+#    at /opt/keycloak/providers, so just restart Keycloak to load it.
+echo "==> Restarting Keycloak to load the new provider..."
+docker restart mfa-keycloak
+
+echo ""
+echo "=> Deployment complete. Keycloak is restarting."
+echo "=> Watch logs with:  mise run logs:keycloak"
+'''
