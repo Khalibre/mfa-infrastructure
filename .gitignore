@@ -7,3 +7,4 @@ certs/*
 databases/*tar.gz
 .agents
 skills-lock.json
+.idea

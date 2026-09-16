@@ -1,0 +1,37 @@
+plugins {
+    `java-library`
+}
+
+group = "com.khalibre.keycloak"
+version = "1.0.0"
+
+val keycloakVersion = "26.1.3"
+val jbossLoggingVersion = "3.6.1.Final"
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly("org.keycloak:keycloak-server-spi:$keycloakVersion")
+    compileOnly("org.keycloak:keycloak-server-spi-private:$keycloakVersion")
+    compileOnly("org.keycloak:keycloak-core:$keycloakVersion")
+    compileOnly("org.jboss.logging:jboss-logging:$jbossLoggingVersion")
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
+tasks.named<Jar>("jar") {
+    manifest {
+        attributes["Implementation-Title"] = project.name
+        attributes["Implementation-Version"] = project.version
+    }
+}
