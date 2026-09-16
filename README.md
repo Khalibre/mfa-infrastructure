@@ -47,7 +47,23 @@ Manage the stack easily using `mise run <task>`:
 | `pull` | Pull latest Docker images |
 | `db:export` | Export a full MariaDB SQL dump into `database/mariadb_backup_<timestamp>.tar.gz` |
 | `db:restore <file>`| Restore MariaDB databases from a `.tar.gz` backup file |
+| `build:keycloak-provider` | Build the Keycloak provider JAR |
+| `deploy:keycloak-provider` | Build and deploy the provider JAR into the running Keycloak container |
 | `clean` | **DANGER**: Stop stack, delete volumes, DB backups, and remove generated certs |
+
+## Keycloak Provider
+
+The `keycloak-provider/` module contains custom Keycloak identity providers. After making changes:
+
+```bash
+# Build only
+mise run build:keycloak-provider
+
+# Build and deploy to the running Keycloak container (auto-restarts Keycloak)
+mise run deploy:keycloak-provider
+```
+
+The provider JAR is mounted into the Keycloak container at `/opt/keycloak/providers` so it's available on container start.
 
 ## Backup and Restore
 

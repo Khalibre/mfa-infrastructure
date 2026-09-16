@@ -87,6 +87,7 @@ services:
       - "Window-Server-22.khalibre-ad-lab.crosswired.me:192.168.241.49"
     volumes:
       - './certs/truststore:/opt/keycloak/certs/truststore:ro'
+      - './keycloak-provider/build/libs:/opt/keycloak/providers'
     labels:
       - 'multifactor-authentication.project=true'
       - 'traefik.enable=true'
