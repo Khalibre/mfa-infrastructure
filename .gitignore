@@ -1,5 +1,6 @@
 .env
 certs/*
+certs/*/*
 !certs/.gitkeep
 !certs/truststore/
 !certs/truststore/.gitkeep
