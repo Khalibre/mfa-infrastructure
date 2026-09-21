@@ -88,6 +88,7 @@ services:
     volumes:
       - './certs/truststore:/opt/keycloak/certs/truststore:ro'
       - './keycloak-provider/build/libs:/opt/keycloak/providers'
+      - './themes/khalibre:/opt/keycloak/themes/khalibre'
     labels:
       - 'multifactor-authentication.project=true'
       - 'traefik.enable=true'
