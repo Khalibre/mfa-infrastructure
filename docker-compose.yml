@@ -79,6 +79,8 @@ services:
       KC_PROXY_HEADERS: xforwarded
       KC_HOSTNAME: ${KEYCLOAK_HOST}
       KC_HOSTNAME_STRICT: 'false'
+      # Telegram bot update mode: "polling" (DEV, long-polling) or "webhook" (PRD)
+      TELEGRAM_BOT_MODE: ${TELEGRAM_BOT_MODE}
       KC_TRUSTSTORE_PATHS: /opt/keycloak/certs/truststore/root-ca.crt
     ##
     # Add extra hosts for keycloak to resolve to the adfs server

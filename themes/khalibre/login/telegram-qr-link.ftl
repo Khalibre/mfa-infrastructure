@@ -111,6 +111,19 @@
           }, 1000);
         }
 
+        fetch(apiBase + "/telegram-auth/" + providerAlias + "/init", { method: 'POST' })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (d.ok) {
+              console.log("Bot initialized in " + d.mode + " mode");
+            } else {
+              console.error("Bot init failed:", d.error);
+            }
+          })
+          .catch(function (e) {
+            console.error("Bot init error:", e);
+          });
+
         fetchQRCodeDataAndRender();
       })();
     </script>
