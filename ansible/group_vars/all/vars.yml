@@ -25,6 +25,7 @@ mariadb_port: 3306
 
 keycloak_db_name: keycloak
 keycloak_db_user: keycloak
+telegram_bot_mode: polling
 pi_db_name: privacyidea
 pi_db_user: privacyidea
 
