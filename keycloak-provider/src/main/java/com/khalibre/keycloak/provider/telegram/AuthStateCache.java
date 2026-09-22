@@ -20,7 +20,7 @@ public class AuthStateCache {
     }, 30, 30, TimeUnit.SECONDS);
   }
 
-  public static AuthState createEmpty() {
+  protected static AuthState createEmpty() {
     AuthState state = new AuthState(null, null, null, null, null);
     cache.put(state.getId(), state);
     return state;
@@ -33,11 +33,11 @@ public class AuthStateCache {
     return state;
   }
 
-  public static void store(String id, AuthState state) {
+  protected static void store(String id, AuthState state) {
     cache.put(id, state);
   }
 
-  public static AuthState get(String id) {
+  protected static AuthState get(String id) {
     if (id == null) {
       return null;
     }
@@ -64,7 +64,7 @@ public class AuthStateCache {
     return null;
   }
 
-  public static void remove(String id) {
+  protected static void remove(String id) {
     cache.remove(id);
   }
 

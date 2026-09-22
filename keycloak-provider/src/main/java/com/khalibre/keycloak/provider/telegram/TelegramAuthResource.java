@@ -41,7 +41,7 @@ public class TelegramAuthResource implements RealmResourceProvider {
 
   private final KeycloakSession session;
   private final ObjectMapper objectMapper;
-  private static final String KEY_AUTH_STATE_ID = "authStateId";
+  public static final String KEY_AUTH_STATE_ID = "authStateId";
 
   @Context
   private UriInfo uriInfo;
@@ -69,11 +69,7 @@ public class TelegramAuthResource implements RealmResourceProvider {
         .entity(Map.of("error", "Telegram bot not configured"))
         .build();
     }
-
-    AuthState authState = AuthStateCache.createEmpty();
-    Map<String, String> notes = new HashMap<>();
-    notes.put(KEY_AUTH_STATE_ID, authState.getId());
-    session.singleUseObjects().put(getAuthSessionId(), AuthState.LIFESPAN_SECONDS, notes);
+    AuthState authState = AuthStateSession.create(session, getAuthSessionId());
     String deepLink = getDeepLink(botUsername, authState.getId());
 
     Map<String, Object> result = new HashMap<>();
@@ -223,14 +219,7 @@ public class TelegramAuthResource implements RealmResourceProvider {
   @Path("status")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getStatus() {
-    Map<String, String> notes = session.singleUseObjects().get(getAuthSessionId());
-    if (notes == null) {
-      return Response.status(Status.NOT_FOUND)
-        .entity(Map.of("status", "EXPIRED"))
-        .build();
-    }
-    String authStateId = notes.get(KEY_AUTH_STATE_ID);
-    AuthState state = AuthStateCache.get(authStateId);
+    AuthState state = AuthStateSession.get(session, getAuthSessionId());
     if (state == null) {
       return Response.status(Status.NOT_FOUND)
         .entity(Map.of("status", "EXPIRED"))
@@ -239,7 +228,7 @@ public class TelegramAuthResource implements RealmResourceProvider {
 
     Map<String, Object> result = new HashMap<>();
     result.put("status", state.getStatus());
-    result.put("authStateId", authStateId);
+    result.put("authStateId", state.getId());
     return Response.ok(result).build();
   }
 
