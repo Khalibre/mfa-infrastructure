@@ -1,0 +1,93 @@
+/* CUSTOM styling */
+
+.login-pf body {
+  background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+  min-height: 100vh;
+  margin: 0;
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+.subtitle {
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 400;
+  margin-bottom: 24px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+#qr-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 24px auto;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+#qr-container svg {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 6px;
+  background-color: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 20px 0;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0088cc 0%, #006699 100%);
+  border-radius: 3px;
+  transition: width 1s linear, background-color 0.3s ease;
+  width: 100%;
+}
+
+.progress-bar-fill.blurred {
+  background: linear-gradient(90deg, #9ca3af 0%, #d1d5db 100%);
+}
+
+.hint {
+  color: #6b7280;
+  font-size: 13px;
+  margin-top: 16px;
+}
+
+.kh-link {
+  color: #0088cc;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.kh-link:hover {
+  color: #006699;
+  text-decoration: underline;
+}
+
+#qr-container.blurred {
+  opacity: 0.4;
+  filter: blur(2px);
+}
+
+.kh-back-link {
+  display: inline-block;
+  margin-top: 16px;
+  color: #6b7280;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.kh-back-link:hover {
+  color: #0088cc;
+  text-decoration: underline;
+}
