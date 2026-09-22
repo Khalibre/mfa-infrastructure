@@ -34,6 +34,8 @@ public class AuthStateSession extends AuthStateCache {
     Map<String, String> notes = session.singleUseObjects().get(sessionId);
     if (notes == null) {
       notes = new HashMap<>();
+    } else {
+      notes = new HashMap<>(notes);
     }
     notes.put(KEY_AUTH_STATE_ID, id);
     session.singleUseObjects().put(sessionId, AuthState.LIFESPAN_SECONDS, notes);
