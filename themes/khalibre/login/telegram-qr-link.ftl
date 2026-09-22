@@ -5,12 +5,20 @@
   <#elseif section = "form">
     <script src="${url.resourcesPath}/js/qr-code-styling-1.9.2.js"></script>
 
-    <#if linkMode><p class="subtitle">${msg("telegram.link-description")}</p><#else><p class="subtitle">${msg("telegram.description")}</p></#if>
+    <#if linkMode>
+      <p class="subtitle">${msg("telegram.link-description")}</p>
+    <#else>
+      <p class="subtitle">${msg("telegram.description")}</p>
+    </#if>
+
     <div id="qr-container"></div>
     <div class="progress-bar-container">
       <div id="progress-bar" class="progress-bar-fill"></div>
     </div>
-    <p class="hint">${msg("telegram.using-this-device")} <a id="qr-link" class="kh-link" href="#" data-url="">${msg("doClickHere")}</a></p>
+    <p class="hint">
+      ${msg("telegram.using-this-device")}
+      <a id="qr-link" class="kh-link" href="#" data-url="">${msg("doClickHere")}</a>
+    </p>
 
     <script>
       (function () {
@@ -24,16 +32,14 @@
 
         const apiBase = "/realms/${realm.name}";
         const providerAlias = "${providerAlias!}";
-        const clientId = "${linkClientId!}";
         const callbackUrl = "${callbackUrl!}";
 
         async function checkAuthStatus() {
           if (isRedirecting) return;
           try {
-            const response = await fetch(apiBase + "/qr-auth/status/" + clientId);
+            const response = await fetch(apiBase + "/telegram-auth/status");
             const data = await response.json();
-            if (data.error) return;
-            if (data.authenticated) {
+            if (data.status === 'COMPLETED') {
               isRedirecting = true;
               clearInterval(interval);
               clearInterval(checkLinkInterval);

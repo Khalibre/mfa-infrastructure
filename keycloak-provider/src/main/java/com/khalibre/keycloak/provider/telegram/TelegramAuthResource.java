@@ -14,12 +14,15 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.UriInfo;
 import java.util.HashMap;
 import java.util.Map;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.resource.RealmResourceProvider;
+import org.keycloak.sessions.RootAuthenticationSessionModel;
 
 /**
  * JAX-RS resource exposed by the Telegram identity provider.
@@ -38,6 +41,7 @@ public class TelegramAuthResource implements RealmResourceProvider {
 
   private final KeycloakSession session;
   private final ObjectMapper objectMapper;
+  private static final String KEY_AUTH_STATE_ID = "authStateId";
 
   @Context
   private UriInfo uriInfo;
@@ -67,6 +71,9 @@ public class TelegramAuthResource implements RealmResourceProvider {
     }
 
     AuthState authState = AuthStateCache.createEmpty();
+    Map<String, String> notes = new HashMap<>();
+    notes.put(KEY_AUTH_STATE_ID, authState.getId());
+    session.singleUseObjects().put(getAuthSessionId(), AuthState.LIFESPAN_SECONDS, notes);
     String deepLink = getDeepLink(botUsername, authState.getId());
 
     Map<String, Object> result = new HashMap<>();
@@ -77,7 +84,20 @@ public class TelegramAuthResource implements RealmResourceProvider {
     return Response.ok(result).build();
   }
 
-  public String getDeepLink(String botUsername, String authStateId) {
+  private String getAuthSessionId() {
+    RootAuthenticationSessionModel authSession = getAuthSession();
+    if (authSession == null) {
+      return null;
+    }
+    return authSession.getId();
+  }
+
+  private RootAuthenticationSessionModel getAuthSession() {
+    AuthenticationSessionManager authSessionManager = new AuthenticationSessionManager(session);
+    return authSessionManager.getCurrentRootAuthenticationSession(session.getContext().getRealm());
+  }
+
+  private String getDeepLink(String botUsername, String authStateId) {
     return "https://t.me/" + botUsername + "?start=login_" + authStateId;
   }
 
@@ -197,6 +217,30 @@ public class TelegramAuthResource implements RealmResourceProvider {
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
         .entity(Map.of("ok", false, "error", e.getMessage())).build();
     }
+  }
+
+  @GET
+  @Path("status")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getStatus() {
+    Map<String, String> notes = session.singleUseObjects().get(getAuthSessionId());
+    if (notes == null) {
+      return Response.status(Status.NOT_FOUND)
+        .entity(Map.of("status", "EXPIRED"))
+        .build();
+    }
+    String authStateId = notes.get(KEY_AUTH_STATE_ID);
+    AuthState state = AuthStateCache.get(authStateId);
+    if (state == null) {
+      return Response.status(Status.NOT_FOUND)
+        .entity(Map.of("status", "EXPIRED"))
+        .build();
+    }
+
+    Map<String, Object> result = new HashMap<>();
+    result.put("status", state.getStatus());
+    result.put("authStateId", authStateId);
+    return Response.ok(result).build();
   }
 
   @Override
