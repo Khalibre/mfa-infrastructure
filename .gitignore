@@ -1,9 +1,11 @@
 .env
 certs/*
 !certs/.gitkeep
-!certs/truststore/
+certs/truststore/
 !certs/truststore/.gitkeep
 .ansible
+!databases/export/.gitkeep
+databases/export/*tar.gz
 databases/*tar.gz
 .agents
 skills-lock.json
