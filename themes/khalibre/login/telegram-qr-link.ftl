@@ -1,5 +1,5 @@
 <#import "template.ftl" as layout>
-<@layout.registrationLayout bodyClass="telegram-qr-page" displayInfo=false displayMessage=true; section>
+<@layout.registrationLayout displayInfo=false displayMessage=true; section>
   <#if section = "header">
     <#if linkMode>${msg("telegram.link-title")}<#else>${msg("telegram.title")}</#if>
   <#elseif section = "form">
@@ -133,6 +133,10 @@
         fetchQRCodeDataAndRender();
       })();
     </script>
+
+    <div class="${properties.kcFormOptionsWrapperClass!}">
+        <span><a href="${url.loginUrl}">${msg("backToLogin")}</a></span>
+    </div>
   <#elseif section = "socialProviders">
   </#if>
 </@layout.registrationLayout>
