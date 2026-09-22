@@ -46,6 +46,7 @@ services:
       PI_DB_NAME: ${PI_DB_NAME}
       PI_DB_USER: ${PI_DB_USER}
       PI_DB_PASSWORD: ${PI_DB_PASSWORD}
+      MARIADB_AUTO_UPGRADE: 1
     ports:
       - '${MARIADB_PORT}:3306'
     volumes:

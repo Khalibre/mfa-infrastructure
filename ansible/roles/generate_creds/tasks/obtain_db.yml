@@ -27,15 +27,31 @@
     mode: '0755'
   tags: database, get_db
 
-- name: Obtain Mariadb databases
+- name: List MariaDB backup objects in S3
   amazon.aws.s3_object:
     region: 'ap-southeast-1'
     aws_access_key: '{{ aws_creds.data.data.access_key }}'
     aws_secret_key: '{{ aws_creds.data.data.secret_key }}'
     bucket: 'repository.crosswired.com'
-    object: 'mfa-db-backup/mariadb_backup_20260914_164148.tar.gz'
+    prefix: 'mfa-db-backup/'
+    mode: list
+  register: db_backup_list
+  tags: database, get_db
+
+- name: Determine latest backup key
+  set_fact:
+    latest_db_backup: "{{ db_backup_list.s3_keys | select('match', '^mfa-db-backup/.*\\.tar\\.gz$') | sort | last }}"
+  tags: database, get_db
+
+- name: Obtain latest MariaDB database backup
+  amazon.aws.s3_object:
+    region: 'ap-southeast-1'
+    aws_access_key: '{{ aws_creds.data.data.access_key }}'
+    aws_secret_key: '{{ aws_creds.data.data.secret_key }}'
+    bucket: 'repository.crosswired.com'
+    object: '{{ latest_db_backup }}'
     mode: 'get'
     overwrite: different
-    dest: '{{ project_dir }}/databases/mariadb_backup_20260914_164148.tar.gz'
+    dest: '{{ project_dir }}/databases/{{ latest_db_backup | basename }}'
   tags: database, get_db
 
