@@ -94,12 +94,11 @@ public class TelegramAuthResource implements RealmResourceProvider {
   }
 
   public OAuth2IdentityProviderConfig getConfig(String alias) {
-    if (session == null || session.getContext() == null
-      || session.getContext().getRealm() == null) {
+    if (session == null || session.identityProviders() == null) {
       return null;
     }
 
-    IdentityProviderModel idp = session.getContext().getRealm().getIdentityProviderByAlias(alias);
+    IdentityProviderModel idp = session.identityProviders().getByAlias(alias);
     if (idp == null) {
       return null;
     }
