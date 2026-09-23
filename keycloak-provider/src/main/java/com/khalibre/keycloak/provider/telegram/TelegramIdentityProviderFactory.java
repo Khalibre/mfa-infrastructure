@@ -1,10 +1,9 @@
 package com.khalibre.keycloak.provider.telegram;
 
 import java.util.List;
-
 import org.keycloak.Config;
+import org.keycloak.broker.oidc.OAuth2IdentityProviderConfig;
 import org.keycloak.broker.provider.AbstractIdentityProviderFactory;
-import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
@@ -12,7 +11,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 
 public class TelegramIdentityProviderFactory extends
-  AbstractIdentityProviderFactory<IdentityProvider> {
+  AbstractIdentityProviderFactory<TelegramIdentityProvider> {
 
   public static final String PROVIDER_ID = "telegram";
 
@@ -22,30 +21,18 @@ public class TelegramIdentityProviderFactory extends
   }
 
   @Override
-  public IdentityProvider create(KeycloakSession session, IdentityProviderModel model) {
-    return new TelegramIdentityProvider(session, model);
+  public TelegramIdentityProvider create(KeycloakSession session, IdentityProviderModel model) {
+    return new TelegramIdentityProvider(session, new OAuth2IdentityProviderConfig(model));
   }
 
   @Override
-  public IdentityProviderModel createConfig() {
-    return new IdentityProviderModel();
+  public OAuth2IdentityProviderConfig createConfig() {
+    return new OAuth2IdentityProviderConfig();
   }
 
   @Override
   public List<ProviderConfigProperty> getConfigProperties() {
     return ProviderConfigurationBuilder.create()
-      .property()
-      .name(TelegramIdentityProvider.TELEGRAM_BOT_USERNAME_KEY)
-      .label("Bot Username")
-      .helpText("Telegram bot username (without @).")
-      .type(ProviderConfigProperty.STRING_TYPE)
-      .add()
-      .property()
-      .name(TelegramIdentityProvider.TELEGRAM_BOT_TOKEN_KEY)
-      .label("Bot Token")
-      .helpText("Telegram bot token obtained from BotFather.")
-      .type(ProviderConfigProperty.PASSWORD)
-      .add()
       .property()
       .name(TelegramIdentityProvider.AUTO_LINK_BY_PHONE_NUMBER_KEY)
       .label("Auto Link By Phone Number")
