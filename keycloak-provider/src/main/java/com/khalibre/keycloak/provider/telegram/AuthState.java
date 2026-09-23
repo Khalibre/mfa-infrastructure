@@ -1,6 +1,7 @@
 package com.khalibre.keycloak.provider.telegram;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 public class AuthState {
@@ -81,7 +82,10 @@ public class AuthState {
   }
 
   public String getPhoneNumber() {
-    return phoneNumber;
+    return Optional.ofNullable(phoneNumber)
+      .map(String::strip)
+      .map(phone -> phone.startsWith("+") ? phone : "+" + phone)
+      .orElse(null);
   }
 
   public void setPhoneNumber(String phoneNumber) {

@@ -46,6 +46,14 @@ public class TelegramIdentityProviderFactory extends
       .helpText("Telegram bot token obtained from BotFather.")
       .type(ProviderConfigProperty.PASSWORD)
       .add()
+      .property()
+      .name(TelegramIdentityProvider.AUTO_LINK_BY_PHONE_NUMBER_KEY)
+      .label("Auto Link By Phone Number")
+      .helpText(
+        "Automatically link Telegram account to existing Keycloak user with matching phone number.")
+      .type(ProviderConfigProperty.BOOLEAN_TYPE)
+      .defaultValue("true")
+      .add()
       .build();
   }
 
