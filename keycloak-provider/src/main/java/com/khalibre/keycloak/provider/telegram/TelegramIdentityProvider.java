@@ -10,6 +10,8 @@ import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
+import java.util.Iterator;
+import java.util.stream.Stream;
 import org.keycloak.broker.provider.AbstractIdentityProvider;
 import org.keycloak.broker.provider.AuthenticationRequest;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
@@ -40,9 +42,15 @@ public class TelegramIdentityProvider extends AbstractIdentityProvider<IdentityP
   public static final String ATTR_TG_USERNAME = "telegram-username";
   public static final String ATTR_TG_USER_ID = "telegram-user-id";
   public static final String ATTR_TG_USER_PHONE_NUMBER = "telegram-phone-number";
+  public static final String AUTO_LINK_BY_PHONE_NUMBER_KEY = "autoLinkByPhoneNumber";
 
   public TelegramIdentityProvider(KeycloakSession session, IdentityProviderModel config) {
     super(session, config);
+  }
+
+  private boolean isAutoLinkByPhoneNumberEnabled() {
+    String value = getConfig().getConfig().get(AUTO_LINK_BY_PHONE_NUMBER_KEY);
+    return "true".equalsIgnoreCase(value);
   }
 
   public String getBotUsername() {
@@ -195,7 +203,7 @@ public class TelegramIdentityProvider extends AbstractIdentityProvider<IdentityP
 
         BrokeredIdentityContext context = buildContext(
           auth.getTelegramUserId(),
-          getAutoLinkUsername(auth.getPhoneNumber()),
+          findAutoLinkUsername(auth.getPhoneNumber()),
           auth.getUsername(),
           auth.getFirstName(),
           auth.getLastName(),
@@ -212,13 +220,30 @@ public class TelegramIdentityProvider extends AbstractIdentityProvider<IdentityP
       }
     }
 
-    private String getAutoLinkUsername(String phoneNumber) {
-      UserModel user = provider.session.users()
-        .searchForUserByUserAttributeStream(session.getContext().getRealm(),
-          ATTR_TG_USER_PHONE_NUMBER, phoneNumber)
-        .findFirst()
-        .orElse(null);
-      return user == null ? phoneNumber : user.getUsername();
+    private String findAutoLinkUsername(String phoneNumber) {
+      if (!provider.isAutoLinkByPhoneNumberEnabled() || StringUtil.isBlank(phoneNumber)) {
+        return null;
+      }
+
+      RealmModel realm = session.getContext().getRealm();
+      try (Stream<UserModel> matches = provider.session.users()
+        .searchForUserByUserAttributeStream(realm, ATTR_TG_USER_PHONE_NUMBER, phoneNumber)) {
+        Iterator<UserModel> iterator = matches.iterator();
+        if (!iterator.hasNext()) {
+          return null;
+        }
+
+        UserModel user = iterator.next();
+        if (iterator.hasNext()) {
+          return null;
+        }
+
+        String providerAlias = provider.getConfig().getAlias();
+        if (provider.session.users().getFederatedIdentity(realm, user, providerAlias) != null) {
+          return null;
+        }
+        return user.getUsername();
+      }
     }
 
     @Nonnull
@@ -226,7 +251,11 @@ public class TelegramIdentityProvider extends AbstractIdentityProvider<IdentityP
       String username, String firstName, String lastName, String phoneNumber) {
       BrokeredIdentityContext context = new BrokeredIdentityContext(telegramUserId,
         provider.getConfig());
-      context.setModelUsername(autoLinkUsername);
+      if (autoLinkUsername != null) {
+        context.setModelUsername(autoLinkUsername);
+      } else {
+        context.setModelUsername(phoneNumber);
+      }
       context.setUsername(username);
       context.setFirstName(sanitizeEmojiAndRareScript(firstName));
       context.setLastName(sanitizeEmojiAndRareScript(lastName));
