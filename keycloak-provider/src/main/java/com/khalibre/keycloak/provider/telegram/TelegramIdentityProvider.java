@@ -195,6 +195,7 @@ public class TelegramIdentityProvider extends AbstractIdentityProvider<IdentityP
 
         BrokeredIdentityContext context = buildContext(
           auth.getTelegramUserId(),
+          getAutoLinkUsername(auth.getPhoneNumber()),
           auth.getUsername(),
           auth.getFirstName(),
           auth.getLastName(),
@@ -211,11 +212,21 @@ public class TelegramIdentityProvider extends AbstractIdentityProvider<IdentityP
       }
     }
 
+    private String getAutoLinkUsername(String phoneNumber) {
+      UserModel user = provider.session.users()
+        .searchForUserByUserAttributeStream(session.getContext().getRealm(),
+          ATTR_TG_USER_PHONE_NUMBER, phoneNumber)
+        .findFirst()
+        .orElse(null);
+      return user == null ? phoneNumber : user.getUsername();
+    }
+
     @Nonnull
-    private BrokeredIdentityContext buildContext(String telegramUserId, String username,
-      String firstName, String lastName, String phoneNumber) {
+    private BrokeredIdentityContext buildContext(String telegramUserId, String autoLinkUsername,
+      String username, String firstName, String lastName, String phoneNumber) {
       BrokeredIdentityContext context = new BrokeredIdentityContext(telegramUserId,
         provider.getConfig());
+      context.setModelUsername(autoLinkUsername);
       context.setUsername(username);
       context.setFirstName(sanitizeEmojiAndRareScript(firstName));
       context.setLastName(sanitizeEmojiAndRareScript(lastName));
