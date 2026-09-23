@@ -12,6 +12,7 @@ import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.stream.Stream;
+import org.keycloak.broker.oidc.OAuth2IdentityProviderConfig;
 import org.keycloak.broker.provider.AbstractIdentityProvider;
 import org.keycloak.broker.provider.AuthenticationRequest;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
@@ -21,7 +22,6 @@ import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -30,10 +30,9 @@ import org.keycloak.services.ErrorPage;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.utils.StringUtil;
 
-public class TelegramIdentityProvider extends AbstractIdentityProvider<IdentityProviderModel> {
+public class TelegramIdentityProvider extends
+  AbstractIdentityProvider<OAuth2IdentityProviderConfig> {
 
-  public static final String TELEGRAM_BOT_USERNAME_KEY = "telegram_bot_username";
-  public static final String TELEGRAM_BOT_TOKEN_KEY = "telegram_bot_token";
   public static final String ATTR_TG_FIRST_NAME = "telegram-first-name";
   public static final String ATTR_TG_LAST_NAME = "telegram-last-name";
   public static final String ATTR_TG_USERNAME = "telegram-username";
@@ -41,7 +40,7 @@ public class TelegramIdentityProvider extends AbstractIdentityProvider<IdentityP
   public static final String ATTR_TG_USER_PHONE_NUMBER = "telegram-phone-number";
   public static final String AUTO_LINK_BY_PHONE_NUMBER_KEY = "autoLinkByPhoneNumber";
 
-  public TelegramIdentityProvider(KeycloakSession session, IdentityProviderModel config) {
+  public TelegramIdentityProvider(KeycloakSession session, OAuth2IdentityProviderConfig config) {
     super(session, config);
   }
 
@@ -51,11 +50,11 @@ public class TelegramIdentityProvider extends AbstractIdentityProvider<IdentityP
   }
 
   public String getBotUsername() {
-    return getConfig().getConfig().get(TELEGRAM_BOT_USERNAME_KEY);
+    return getConfig().getClientId();
   }
 
   public String getBotToken() {
-    return getConfig().getConfig().get(TELEGRAM_BOT_TOKEN_KEY);
+    return getConfig().getClientSecret();
   }
 
   @Override
