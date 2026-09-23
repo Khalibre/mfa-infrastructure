@@ -20,9 +20,6 @@ import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.AuthenticatedClientSessionModel;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.Constants;
 import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
@@ -139,31 +136,8 @@ public class TelegramIdentityProvider extends AbstractIdentityProvider<IdentityP
       request.getAuthenticationSession().getAuthNote("LINKING_IDENTITY_PROVIDER") != null;
     formProvider.setAttribute("linkMode", isLinkMode);
     formProvider.setAttribute("callbackUrl", callbackUrl.toString());
-    formProvider.setAttribute("linkClientId", getLinkClientId(request.getAuthenticationSession()));
     formProvider.setAttribute("providerAlias", getConfig().getAlias());
     return formProvider.createForm("telegram-qr-link.ftl");
-  }
-
-  private String getLinkClientId(AuthenticationSessionModel authSession) {
-    if (authSession != null && authSession.getParentSession() != null) {
-      String userSessionId = authSession.getParentSession().getId();
-      UserSessionModel userSession = session.sessions()
-        .getUserSession(authSession.getRealm(), userSessionId);
-      if (userSession != null) {
-        for (AuthenticatedClientSessionModel cs : userSession.getAuthenticatedClientSessions()
-          .values()) {
-          ClientModel client = cs.getClient();
-          String baseUrl = client.getBaseUrl();
-          if (StringUtil.isNotBlank(baseUrl)
-            && !Constants.ACCOUNT_MANAGEMENT_CLIENT_ID.equals(client.getClientId())) {
-            return client.getClientId();
-          }
-        }
-      }
-    }
-    ClientModel accountClient = session.getContext().getRealm()
-      .getClientByClientId(Constants.ACCOUNT_MANAGEMENT_CLIENT_ID);
-    return accountClient != null ? accountClient.getClientId() : "";
   }
 
   private static String sanitizeEmojiAndRareScript(String input) {
