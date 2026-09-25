@@ -1,8 +1,8 @@
-# 2FA Infrastructure
+# MFA Infrastructure
 
 This project provisions and runs a Multi-Factor Authentication (MFA) stack using Keycloak and PrivacyIDEA.
 
-The environment is managed via [Docker Compose](https://docs.docker.com/compose/) and orchestrated using [Mise](https://mise.jdx.dev/) tasks. Secrets and certificates are retrieved dynamically from HashiCorp Vault via Ansible.
+Docker Compose runs the services. Mise runs the commands. Ansible generates the local runtime files from Vault-backed variables.
 
 ## Architecture
 
@@ -10,6 +10,7 @@ The environment is managed via [Docker Compose](https://docs.docker.com/compose/
 * **Keycloak**: Identity and Access Management (IAM) server (version 26+).
 * **PrivacyIDEA**: Two Factor Authentication system.
 * **MariaDB**: Centralized database backend for both Keycloak and PrivacyIDEA.
+* **smtp4dev**: Internal SMTP catcher and web inbox for test mail.
 
 ## Prerequisites
 
@@ -17,59 +18,50 @@ The environment is managed via [Docker Compose](https://docs.docker.com/compose/
 2. [Mise](https://mise.jdx.dev/getting-started.html) installed on the host
 3. Access to HashiCorp Vault for fetching credentials
 
-## Quick Start
+## Deploy
 
-Bring up the entire stack (fetches Vault secrets, generates `.env`, writes certificates, and starts Docker containers):
+Generate runtime files and start the stack:
 
 ```bash
 mise run start
 ```
 
-Before the containers start, this also creates `keycloak-providers/` and builds the provider JAR and
-the khalibre-account-ui theme JAR into it, so `/opt/keycloak/providers` is populated on container
-start.
-
-If a database backup was downloaded from S3 into `databases/`, `start` will print the exact `mise run db:restore` command to load it.
+This generates `.env`, certificates, PrivacyIDEA encfile, MariaDB config, renders the Keycloak Dockerfile, builds the custom Keycloak image, creates `keycloak-providers/`, builds provider/theme JARs into it, and then starts Docker Compose. If Ansible downloads a database backup, the task prints the restore command.
 
 ### Access URLs
 
 * **Keycloak**: `https://keycloak-mfa.crosswired.me`
-
 * **PrivacyIDEA**: `https://pi-mfa.crosswired.me`
-
+* **Mail Inbox**: `https://mfa-mail.crosswired.me`
 * **Traefik Dashboard**: `http://localhost:8080`
 
-## Available Tasks
+Internal SMTP endpoint for containers on the stack network: `smtp4dev:25`.
 
-Manage the stack easily using `mise run <task>`:
+Generated MariaDB config is written to `config/mariadb/conf.d/`. The generated root `Dockerfile` and MariaDB config are ignored by git.
+
+## Tasks
+
+Run tasks with `mise run <task>`.
 
 | Task | Description |
 |---|---|
-| `start` | Fetch secrets via Ansible, generate `.env` and certs, start Docker stack |
-| `start:services` | Start docker compose |
-| `stop` | Stop all containers gracefully |
-| `stop:keycloak` | Stop only the Keycloak container |
-| `stop:mariadb` | Stop only the MariaDB container |
-| `stop:pi` | Stop only the PrivacyIDEA container |
-| `start:keycloak` | Start (or create) the Keycloak container |
-| `start:mariadb` | Start an existing, stopped MariaDB container |
-| `start:pi` | Start an existing, stopped PrivacyIDEA container |
-| `start:privacyidea` | Start (or create) the PrivacyIDEA container |
-| `down` | Stop and remove containers (keeps volumes intact) |
-| `restart` | Restart all containers |
-| `logs:keycloak` | check keycloak logs |
-| `logs:privacyidea` | check privacyidea logs |
-| `logs:mariadb` | check mariadb logs |
-| `ps` | List running containers |
-| `pull` | Pull latest Docker images |
-| `db:export` | Dump the Keycloak and PrivacyIDEA databases into `databases/mariadb_backup_<timestamp>.tar.gz` |
-| `db:restore [file]` | Restore MariaDB databases from a `.tar.gz` backup file; defaults to the most recent file in `databases/` if none is given |
+| `start` | Generate runtime files, build Keycloak/provider assets, and start the stack |
+| `start:services` | Start Compose services without Ansible |
+| `stop` / `restart` / `down` | Stop, restart, or remove containers |
+| `start:keycloak` / `stop:keycloak` / `logs:keycloak` | Manage Keycloak |
+| `start:mariadb` / `stop:mariadb` / `logs:mariadb` | Manage MariaDB |
+| `start:pi` / `stop:pi` / `logs:privacyidea` | Manage PrivacyIDEA |
+| `start:mail` / `stop:mail` / `logs:mail` | Manage smtp4dev |
+| `build:keycloak` | Render Dockerfile and build custom Keycloak image |
 | `build:keycloak-providers` | Create `keycloak-providers/`, then build the provider JAR and the khalibre-account-ui theme JAR into it |
 | `build:keycloak-provider` | Build the Keycloak provider JAR (runs tests) |
 | `build:khalibre-account-ui` | Build the khalibre-account-ui theme JAR and copy it to `keycloak-providers/` |
 | `deploy:khalibre-account-ui` | Build the khalibre-account-ui theme JAR and restart Keycloak to load it |
 | `deploy:keycloak-provider` | Build and deploy the provider JAR into the running Keycloak container |
-| `clean` | **DANGER**: Stop stack, delete volumes, DB backups, and remove generated certs |
+| `ps` / `pull` | Show containers or pull images |
+| `db:export` | Create a full MariaDB physical backup in `databases/export/` |
+| `db:restore [file]` | Restore the newest backup, or a specific `.tar.gz` file |
+| `clean` | Remove containers, volumes, generated files, and DB backups |
 
 ## Keycloak Provider
 
