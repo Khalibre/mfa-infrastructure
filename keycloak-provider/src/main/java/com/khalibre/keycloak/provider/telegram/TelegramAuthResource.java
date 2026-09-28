@@ -183,7 +183,7 @@ public class TelegramAuthResource implements RealmResourceProvider {
 
       TelegramWebhookPayload update = objectMapper.readValue(payload,
         TelegramWebhookPayload.class);
-      TelegramUpdateHandler handler = new TelegramUpdateHandler();
+      TelegramUpdateHandler handler = new TelegramUpdateHandler(botToken);
       handler.handleUpdate(update);
 
       return Response.ok(Map.of("ok", true)).build();
