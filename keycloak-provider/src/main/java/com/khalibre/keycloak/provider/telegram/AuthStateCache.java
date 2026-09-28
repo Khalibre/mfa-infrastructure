@@ -14,9 +14,7 @@ public class AuthStateCache {
 
   static {
     scheduler.scheduleAtFixedRate(() -> {
-      long now = Instant.now().getEpochSecond();
-      cache.entrySet().removeIf(entry ->
-        entry.getValue().getExpiresAt() < now);
+      cache.entrySet().removeIf(entry -> isRemoved(entry.getValue()));
     }, 30, 30, TimeUnit.SECONDS);
   }
 
@@ -45,11 +43,15 @@ public class AuthStateCache {
     if (state == null) {
       return null;
     }
-    if (state.getExpiresAt() < Instant.now().getEpochSecond()) {
+    if (isRemoved(state)) {
       cache.remove(id);
       return null;
     }
     return state;
+  }
+
+  private static boolean isRemoved(AuthState state) {
+    return state.getExpiresAt() + 60 < Instant.now().getEpochSecond();
   }
 
   public static AuthState findByTelegramUserId(String telegramUserId) {

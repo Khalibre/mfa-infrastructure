@@ -116,4 +116,8 @@ public class AuthState {
   public long getExpiresAt() {
     return expiresAt;
   }
+
+  public boolean isExpired() {
+    return expiresAt < Instant.now().getEpochSecond();
+  }
 }
