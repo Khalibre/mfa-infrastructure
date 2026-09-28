@@ -81,6 +81,8 @@ public class TelegramIdentityProvider extends
     user.setSingleAttribute(ATTR_TG_USERNAME, context.getUserAttribute(ATTR_TG_USERNAME));
     user.setSingleAttribute(ATTR_TG_USER_PHONE_NUMBER,
       context.getUserAttribute(ATTR_TG_USER_PHONE_NUMBER));
+    user.setSingleAttribute(ATTR_TG_FIRST_NAME, context.getUserAttribute(ATTR_TG_FIRST_NAME));
+    user.setSingleAttribute(ATTR_TG_LAST_NAME, context.getUserAttribute(ATTR_TG_LAST_NAME));
   }
 
   @Override
@@ -90,6 +92,8 @@ public class TelegramIdentityProvider extends
     user.setSingleAttribute(ATTR_TG_USERNAME, context.getUserAttribute(ATTR_TG_USERNAME));
     user.setSingleAttribute(ATTR_TG_USER_PHONE_NUMBER,
       context.getUserAttribute(ATTR_TG_USER_PHONE_NUMBER));
+    user.setSingleAttribute(ATTR_TG_FIRST_NAME, context.getUserAttribute(ATTR_TG_FIRST_NAME));
+    user.setSingleAttribute(ATTR_TG_LAST_NAME, context.getUserAttribute(ATTR_TG_LAST_NAME));
   }
 
   @Override
