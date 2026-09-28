@@ -3,11 +3,6 @@ package com.khalibre.keycloak.provider.telegram;
 public class TelegramUpdateHandler {
 
   private static final String COMMAND_START_LOGIN = "/start login_";
-  private final String botToken;
-
-  public TelegramUpdateHandler(String botToken) {
-    this.botToken = botToken;
-  }
 
   public void handleUpdate(TelegramWebhookPayload update) {
     if (update.getMessage() == null) {
@@ -39,11 +34,9 @@ public class TelegramUpdateHandler {
     state.setFirstName(from.getFirstName());
     state.setLastName(from.getLastName());
     state.setUsername(from.getUsername());
+    state.setPhoneNumberRequested(false);
     state.setStatus("BOT_STARTED");
     AuthStateCache.store(authStateId, state);
-
-    TelegramBotClient botClient = new TelegramBotClient(botToken);
-    botClient.requestPhoneNumber(chatId);
   }
 
   private void handleContact(TelegramWebhookPayload.From from,

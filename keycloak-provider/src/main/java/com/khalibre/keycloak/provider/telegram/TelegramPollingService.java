@@ -16,7 +16,7 @@ public class TelegramPollingService {
   public TelegramPollingService(String alias, String botToken) {
     this.alias = alias;
     this.botClient = new TelegramBotClient(botToken);
-    this.updateHandler = new TelegramUpdateHandler(botToken);
+    this.updateHandler = new TelegramUpdateHandler();
   }
 
   public void start() {

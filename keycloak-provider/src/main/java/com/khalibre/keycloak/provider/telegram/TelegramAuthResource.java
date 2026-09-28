@@ -15,8 +15,11 @@ import jakarta.ws.rs.core.UriInfo;
 import java.util.HashMap;
 import java.util.Map;
 import org.keycloak.broker.oidc.OAuth2IdentityProviderConfig;
+import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
@@ -180,7 +183,7 @@ public class TelegramAuthResource implements RealmResourceProvider {
 
       TelegramWebhookPayload update = objectMapper.readValue(payload,
         TelegramWebhookPayload.class);
-      TelegramUpdateHandler handler = new TelegramUpdateHandler(botToken);
+      TelegramUpdateHandler handler = new TelegramUpdateHandler();
       handler.handleUpdate(update);
 
       return Response.ok(Map.of("ok", true)).build();
@@ -205,6 +208,69 @@ public class TelegramAuthResource implements RealmResourceProvider {
     result.put("status", state.getStatus());
     result.put("authStateId", state.getId());
     return Response.ok(result).build();
+  }
+
+  @GET
+  @Path("{alias}/phone-required")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response isPhoneNumberRequired(@PathParam("alias") String alias) {
+    OAuth2IdentityProviderConfig config = getConfig(alias);
+    if (config == null) {
+      return Response.status(Response.Status.BAD_REQUEST)
+        .entity(Map.of("error", "Telegram bot not configured",
+          "alias", alias))
+        .build();
+    }
+
+    String botToken = config.getClientSecret();
+    if (botToken == null) {
+      return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+        .entity(Map.of("error", "Telegram bot not configured",
+          "alias", alias))
+        .build();
+    }
+
+    AuthState state = AuthStateSession.get(session, getAuthSessionId());
+    if (state == null) {
+      return Response.status(Status.NOT_FOUND)
+        .entity(Map.of("status", "EXPIRED"))
+        .build();
+    }
+
+    boolean accountLinked = isAccountLinked(alias, state);
+    boolean phoneRequired = !accountLinked;
+    if (!phoneRequired) {
+      state.setStatus("COMPLETED");
+      AuthStateCache.store(state.getId(), state);
+    } else if (!state.isPhoneNumberRequested()) {
+      String chatId = state.getTelegramUserId();
+      if (chatId == null) {
+        return Response.status(Status.INTERNAL_SERVER_ERROR)
+          .entity(Map.of("error", "Telegram chat ID is unavailable"))
+          .build();
+      }
+
+      new TelegramBotClient(botToken).requestPhoneNumber(chatId);
+      state.setPhoneNumberRequested(true);
+      AuthStateCache.store(state.getId(), state);
+    }
+
+    return Response.ok(Map.of("phoneRequired", phoneRequired)).build();
+  }
+
+  private boolean isAccountLinked(String alias, AuthState state) {
+    if (state.getTelegramUserId() == null) {
+      return false;
+    }
+
+    RealmModel realm = session.getContext().getRealm();
+    FederatedIdentityModel socialLink = new FederatedIdentityModel(
+      alias,
+      state.getTelegramUserId(),
+      null
+    );
+    UserModel user = session.users().getUserByFederatedIdentity(realm, socialLink);
+    return user != null;
   }
 
   @Override

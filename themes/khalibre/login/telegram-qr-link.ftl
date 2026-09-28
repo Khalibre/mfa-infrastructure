@@ -19,6 +19,9 @@
       ${msg("telegram.using-this-device")}
       <a id="qr-link" class="kh-link" href="#" data-url="">${msg("doClickHere")}</a>
     </p>
+    <div id="phone-number-prompt" hidden>
+      <p class="subtitle">${msg("telegram.phone-number-prompt")}</p>
+    </div>
 
     <script>
       (function () {
@@ -29,6 +32,7 @@
         let qrCode;
         let timeLeft = duration;
         let isRedirecting = false;
+        let phoneNumberRequestPending = false;
 
         const apiBase = "/realms/${realm.name}";
         const providerAlias = "${providerAlias!}";
@@ -39,6 +43,40 @@
           try {
             const response = await fetch(apiBase + "/telegram-auth/status");
             const data = await response.json();
+            if (data.status === 'BOT_STARTED') {
+              if (phoneNumberRequestPending) return;
+              phoneNumberRequestPending = true;
+
+              const phoneResponse = await fetch(
+                apiBase + "/telegram-auth/" + providerAlias + "/phone-required"
+              );
+              if (!phoneResponse.ok) {
+                phoneNumberRequestPending = false;
+                throw new Error("Failed to check phone number requirement");
+              }
+
+              const phoneData = await phoneResponse.json();
+              const phoneRequired = phoneData.phoneRequired;
+              if (phoneRequired === undefined) {
+                phoneNumberRequestPending = false;
+                throw new Error("Phone number requirement was not returned");
+              }
+
+              if (phoneRequired) {
+                const prompt = document.getElementById("phone-number-prompt");
+                if (prompt) prompt.hidden = false;
+                return;
+              }
+
+              phoneNumberRequestPending = false;
+              isRedirecting = true;
+              clearInterval(interval);
+              clearInterval(checkLinkInterval);
+              if (winQrLink) winQrLink.close();
+              window.location.href = callbackUrl;
+              return;
+            }
+
             if (data.status === 'COMPLETED') {
               isRedirecting = true;
               clearInterval(interval);
