@@ -173,7 +173,7 @@
     </script>
 
     <div class="${properties.kcFormOptionsWrapperClass!}">
-        <span><a href="${url.loginUrl}">${msg("backToLogin")}</a></span>
+        <span><a href="${url.loginUrl}">${kcSanitize(msg("backToLogin"))?no_esc}</a></span>
     </div>
   <#elseif section = "socialProviders">
   </#if>
