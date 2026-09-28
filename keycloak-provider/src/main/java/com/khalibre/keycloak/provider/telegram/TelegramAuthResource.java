@@ -15,6 +15,7 @@ import jakarta.ws.rs.core.UriInfo;
 import java.util.HashMap;
 import java.util.Map;
 import org.keycloak.broker.oidc.OAuth2IdentityProviderConfig;
+import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
@@ -63,11 +64,20 @@ public class TelegramAuthResource implements RealmResourceProvider {
     }
 
     String botUsername = config.getClientId();
-    if (botUsername == null) {
+    String botToken = config.getClientSecret();
+    if (botUsername == null || botToken == null) {
       return Response.status(Response.Status.SERVICE_UNAVAILABLE)
         .entity(Map.of("error", "Telegram bot not configured"))
         .build();
     }
+
+    AuthState oldAuthState = AuthStateSession.get(session, getAuthSessionId());
+    if (oldAuthState != null && "EXPIRED".equalsIgnoreCase(oldAuthState.getStatus())) {
+      LoginFormsProvider formProvider = session.getProvider(LoginFormsProvider.class);
+      String message = formProvider.getMessage("telegram.session-expired");
+      new TelegramBotClient(botToken).sendMessage(oldAuthState.getTelegramUserId(), message, null);
+    }
+
     AuthState authState = AuthStateSession.create(session, getAuthSessionId());
     String deepLink = getDeepLink(botUsername, authState.getId());
 

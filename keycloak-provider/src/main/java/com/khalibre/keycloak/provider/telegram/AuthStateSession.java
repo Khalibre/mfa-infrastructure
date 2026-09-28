@@ -38,6 +38,6 @@ public class AuthStateSession extends AuthStateCache {
       notes = new HashMap<>(notes);
     }
     notes.put(KEY_AUTH_STATE_ID, id);
-    session.singleUseObjects().put(sessionId, AuthState.LIFESPAN_SECONDS, notes);
+    session.singleUseObjects().put(sessionId, AuthState.LIFESPAN_SECONDS + 60, notes);
   }
 }

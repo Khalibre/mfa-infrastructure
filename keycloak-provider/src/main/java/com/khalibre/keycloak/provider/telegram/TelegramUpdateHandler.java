@@ -1,5 +1,8 @@
 package com.khalibre.keycloak.provider.telegram;
 
+import com.khalibre.keycloak.provider.telegram.TelegramWebhookPayload.Contact;
+import com.khalibre.keycloak.provider.telegram.TelegramWebhookPayload.From;
+
 public class TelegramUpdateHandler {
 
   private static final String COMMAND_START_LOGIN = "/start login_";
@@ -38,23 +41,21 @@ public class TelegramUpdateHandler {
     state.setLastName(from.getLastName());
     state.setUsername(from.getUsername());
     state.setPhoneNumberRequested(false);
-    state.setStatus("BOT_STARTED");
+    state.setStatus(state.isExpired() ? "EXPIRED" : "BOT_STARTED");
     AuthStateCache.store(authStateId, state);
   }
 
   private void handleContact(TelegramWebhookPayload.From from,
     TelegramWebhookPayload.Contact contact) {
     AuthState state = AuthStateCache.findByTelegramUserId(from.getId());
-    if (state != null) {
-      if (contact.getFirstName() != null) {
-        state.setFirstName(contact.getFirstName());
-      }
-      if (contact.getLastName() != null) {
-        state.setLastName(contact.getLastName());
-      }
+    if (state != null && isUserContact(from, contact)) {
       state.setPhoneNumber(contact.getPhoneNumber());
-      state.setStatus("COMPLETED");
+      state.setStatus(state.isExpired() ? "EXPIRED" : "COMPLETED");
       AuthStateCache.store(state.getId(), state);
     }
+  }
+
+  private boolean isUserContact(From from, Contact contact) {
+    return from.getId().equals(String.valueOf(contact.getUserId()));
   }
 }
