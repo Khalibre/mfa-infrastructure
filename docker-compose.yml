@@ -82,6 +82,10 @@ services:
       # Telegram bot update mode: "polling" (DEV, long-polling) or "webhook" (PRD)
       TELEGRAM_BOT_MODE: ${TELEGRAM_BOT_MODE}
       KC_TRUSTSTORE_PATHS: /opt/keycloak/certs/truststore/root-ca.crt
+      # Enable Java remote debugging on port 5005
+      JAVA_OPTS_APPEND: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+    ports:
+      - "5005:5005"   # Debug port
     ##
     # Add extra hosts for keycloak to resolve to the adfs server
     ##
