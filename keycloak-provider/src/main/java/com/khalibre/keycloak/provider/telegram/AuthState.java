@@ -15,6 +15,7 @@ public class AuthState {
   private String lastName;
   private String username;
   private String phoneNumber;
+  private boolean phoneNumberRequested;
   private String status;
   private final long createdAt;
   private final long expiresAt;
@@ -79,6 +80,14 @@ public class AuthState {
 
   public void setUsername(String username) {
     this.username = username;
+  }
+
+  public boolean isPhoneNumberRequested() {
+    return phoneNumberRequested;
+  }
+
+  public void setPhoneNumberRequested(boolean phoneNumberRequested) {
+    this.phoneNumberRequested = phoneNumberRequested;
   }
 
   public String getPhoneNumber() {
