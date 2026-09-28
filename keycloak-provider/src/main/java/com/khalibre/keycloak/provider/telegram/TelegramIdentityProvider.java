@@ -11,7 +11,6 @@ import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.stream.Stream;
 import org.keycloak.broker.oidc.OAuth2IdentityProviderConfig;
 import org.keycloak.broker.provider.AbstractIdentityProvider;
@@ -176,14 +175,16 @@ public class TelegramIdentityProvider extends
 
         AuthState auth = AuthStateSession.get(session, sessionId);
         if (auth == null || !"COMPLETED".equals(auth.getStatus())) {
+          sendToTelegram(auth, "telegram.session-expired");
           return callback.error("telegram_auth_failed");
         }
 
         boolean isLinkMode = authSession.getAuthNote("LINKING_IDENTITY_PROVIDER") != null;
 
+        String autoLinkUsername = findAutoLinkUsername(auth.getPhoneNumber());
         BrokeredIdentityContext context = buildContext(
           auth.getTelegramUserId(),
-          findAutoLinkUsername(auth.getPhoneNumber()),
+          autoLinkUsername,
           auth.getUsername(),
           auth.getFirstName(),
           auth.getLastName(),
@@ -195,14 +196,15 @@ public class TelegramIdentityProvider extends
         Response response = callback.authenticated(context);
 
         String chatId = auth.getTelegramUserId();
-        if (chatId != null) {
-          String botToken = provider.getBotToken();
-          if (botToken != null) {
-            LoginFormsProvider formProvider = session.getProvider(LoginFormsProvider.class);
-            String message = isLinkMode
-              ? formProvider.getMessage("telegram.link-success")
-              : formProvider.getMessage("telegram.login-success");
-            new TelegramBotClient(botToken).sendMessage(chatId, message, null);
+        String botToken = provider.getBotToken();
+        if (chatId != null && botToken != null) {
+          boolean accountLinked = isAccountLinked(provider.getConfig().getAlias(), auth);
+          if (accountLinked || autoLinkUsername != null) {
+            String message = isLinkMode ? "telegram.link-success" : "telegram.login-success";
+            sendToTelegram(auth, message);
+          } else {
+            String message = isLinkMode ? "telegram.link-failed" : "telegram.login-failed";
+            sendToTelegram(auth, message);
           }
         }
 
@@ -212,6 +214,32 @@ public class TelegramIdentityProvider extends
       } catch (Exception e) {
         return errorIdentityProviderLogin(e.getMessage());
       }
+    }
+
+    private void sendToTelegram(AuthState auth, String messageKey) {
+      if (auth != null && auth.getTelegramUserId() != null) {
+        String botToken = provider.getBotToken();
+        if (botToken != null) {
+          LoginFormsProvider formProvider = session.getProvider(LoginFormsProvider.class);
+          String message = formProvider.getMessage(messageKey);
+          new TelegramBotClient(botToken).sendMessage(auth.getTelegramUserId(), message, null);
+        }
+      }
+    }
+
+    private boolean isAccountLinked(String alias, AuthState state) {
+      if (state.getTelegramUserId() == null) {
+        return false;
+      }
+
+      RealmModel realm = session.getContext().getRealm();
+      FederatedIdentityModel socialLink = new FederatedIdentityModel(
+        alias,
+        state.getTelegramUserId(),
+        null
+      );
+      UserModel user = session.users().getUserByFederatedIdentity(realm, socialLink);
+      return user != null;
     }
 
     private String findAutoLinkUsername(String phoneNumber) {
@@ -262,6 +290,24 @@ public class TelegramIdentityProvider extends
     }
 
     private Response errorIdentityProviderLogin(String message) {
+      try {
+        AuthenticationSessionModel authSession = session.getContext().getAuthenticationSession();
+        if (authSession != null) {
+          String sessionId = authSession.getParentSession().getId();
+          AuthState auth = AuthStateSession.get(session, sessionId);
+          if (auth != null && auth.getTelegramUserId() != null) {
+            String botToken = provider.getBotToken();
+            if (botToken != null) {
+              boolean isLinkMode = authSession.getAuthNote("LINKING_IDENTITY_PROVIDER") != null;
+              String errorKey = isLinkMode ? "telegram.link-failed" : "telegram.login-failed";
+              sendToTelegram(auth, errorKey);
+            }
+          }
+        }
+      } catch (Exception ignored) {
+        // Best effort - don't fail the error response if Telegram notification fails
+      }
+
       event.event(EventType.IDENTITY_PROVIDER_LOGIN);
       event.error(Errors.IDENTITY_PROVIDER_LOGIN_FAILURE);
       return ErrorPage.error(session, null, Status.BAD_REQUEST, message);
