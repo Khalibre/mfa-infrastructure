@@ -11,6 +11,7 @@ import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.stream.Stream;
 import org.keycloak.broker.oidc.OAuth2IdentityProviderConfig;
 import org.keycloak.broker.provider.AbstractIdentityProvider;
@@ -174,6 +175,8 @@ public class TelegramIdentityProvider extends
           return callback.error("telegram_auth_failed");
         }
 
+        boolean isLinkMode = authSession.getAuthNote("LINKING_IDENTITY_PROVIDER") != null;
+
         BrokeredIdentityContext context = buildContext(
           auth.getTelegramUserId(),
           findAutoLinkUsername(auth.getPhoneNumber()),
@@ -185,7 +188,21 @@ public class TelegramIdentityProvider extends
         AuthStateSession.remove(session, sessionId);
         context.setIdp(provider);
         context.setAuthenticationSession(authSession);
-        return callback.authenticated(context);
+        Response response = callback.authenticated(context);
+
+        String chatId = auth.getTelegramUserId();
+        if (chatId != null) {
+          String botToken = provider.getBotToken();
+          if (botToken != null) {
+            LoginFormsProvider formProvider = session.getProvider(LoginFormsProvider.class);
+            String message = isLinkMode
+              ? formProvider.getMessage("telegram.link-success")
+              : formProvider.getMessage("telegram.login-success");
+            new TelegramBotClient(botToken).sendMessage(chatId, message, null);
+          }
+        }
+
+        return response;
       } catch (WebApplicationException wae) {
         throw wae;
       } catch (Exception e) {
