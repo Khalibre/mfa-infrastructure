@@ -44,11 +44,11 @@ public class TelegramBotClient {
     }
   }
 
-  public void requestPhoneNumber(String chatId) {
-    String replyMarkup = "{\"keyboard\":[[{\"text\":\"Share Phone Number\","
+  public void requestPhoneNumber(String chatId, String message, String buttonText) {
+    String replyMarkup = "{\"keyboard\":[[{\"text\":\"" + buttonText + "\","
       + "\"request_contact\":true}]],\"one_time_keyboard\":true,"
       + "\"resize_keyboard\":true}";
-    sendMessage(chatId, "Please share your phone number to complete login:", replyMarkup);
+    sendMessage(chatId, message, replyMarkup);
   }
 
   public boolean setWebhook(String webhookUrl) {

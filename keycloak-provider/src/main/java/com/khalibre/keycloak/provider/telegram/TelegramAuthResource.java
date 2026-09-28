@@ -259,8 +259,10 @@ public class TelegramAuthResource implements RealmResourceProvider {
           .entity(Map.of("error", "Telegram chat ID is unavailable"))
           .build();
       }
-
-      new TelegramBotClient(botToken).requestPhoneNumber(chatId);
+      LoginFormsProvider formProvider = session.getProvider(LoginFormsProvider.class);
+      String message = formProvider.getMessage("telegram.share-phone-number-prompt");
+      String buttonText = formProvider.getMessage("telegram.share-phone-number-button");
+      new TelegramBotClient(botToken).requestPhoneNumber(chatId, message, buttonText);
       state.setPhoneNumberRequested(true);
       AuthStateCache.store(state.getId(), state);
     }
