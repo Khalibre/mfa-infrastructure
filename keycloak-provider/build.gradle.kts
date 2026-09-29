@@ -37,3 +37,22 @@ tasks.named<Jar>("jar") {
         attributes["Implementation-Version"] = project.version
     }
 }
+
+val providersDir = rootProject.layout.projectDirectory.dir("../keycloak-providers").asFile
+
+val copyJarToProviders by tasks.registering(Copy::class) {
+    group = "build"
+    description = "Copies the built provider jar into ./keycloak-providers for the Keycloak container."
+
+    from(tasks.named("jar"))
+    into(providersDir)
+    rename { "${project.name}-${project.version}.jar" }
+}
+
+tasks.named("assemble") {
+    finalizedBy(copyJarToProviders)
+}
+
+tasks.named<Delete>("clean") {
+    delete(providersDir)
+}
