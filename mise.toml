@@ -34,7 +34,11 @@ if [ -f playbook.yml ] && [ -f ansible/group_vars/all/vault.yml ]; then
       -e project_dir=/project
 fi
 
-# 2. Source environment and bring up stack
+# 2. Create keycloak-providers/ and build the provider JAR into it so the
+#    bind mount at /opt/keycloak/providers is populated before Keycloak starts
+mise run build:keycloak-providers
+
+# 3. Source environment and bring up stack
 set -a; source .env; set +a
 docker compose up -d
 
@@ -44,7 +48,7 @@ echo "PrivacyIDEA: https://${PI_HOST}"
 echo "Traefik:     http://localhost:${TRAEFIK_DASHBOARD_PORT}"
 echo "--------------------------------------------------------"
 
-# 3. Notify user about manual DB restore
+# 4. Notify user about manual DB restore
 db_file="databases/mariadb_backup_20260914_164148.tar.gz"
 if [ -f "$db_file" ]; then
   echo ""
@@ -125,7 +129,12 @@ echo "Removed stack, volumes, generated certificates, and database backups."
 
 [tasks."start:keycloak"]
 description = "Start Keycloak service"
-run = "docker compose up -d keycloak"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+mise run build:keycloak-providers
+docker compose up -d keycloak
+'''
 
 [tasks."start:privacyidea"]
 description = "Start PrivacyIDEA service"
@@ -211,6 +220,71 @@ set -euo pipefail
 echo ""
 echo "=> Built provider JAR:"
 ls -1 keycloak-provider/build/libs/*.jar
+'''
+
+[tasks."build:keycloak-providers"]
+description = "Create keycloak-providers/ and build the provider JAR and the khalibre-account-ui theme JAR into it (the folder bind-mounted at /opt/keycloak/providers)"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+mkdir -p keycloak-providers
+
+if [ -d keycloak-provider ]; then
+  ( cd keycloak-provider && ./gradlew --console=plain assemble )
+else
+  echo "keycloak-provider/ not found — skipping provider build."
+fi
+
+mise run build:khalibre-account-ui
+
+echo ""
+echo "=> keycloak-providers/:"
+ls -1 keycloak-providers
+'''
+
+[tasks."build:khalibre-account-ui"]
+description = "Build the khalibre-account-ui theme JAR into target/ and copy it to keycloak-providers/"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+# mise tasks do not inherit the interactive shell, so nvm-managed node is missing.
+if ! command -v npm >/dev/null 2>&1; then
+  export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+  # shellcheck disable=SC1091
+  [ -s "${NVM_DIR}/nvm.sh" ] && . "${NVM_DIR}/nvm.sh"
+fi
+command -v npm >/dev/null 2>&1 || { echo "Error: npm not found (nvm not loaded)."; exit 1; }
+
+cd khalibre-account-ui
+
+npm ci --no-audit --no-fund 2>/dev/null || npm install --no-audit --no-fund
+npm run build
+
+mvn -q package -DskipTests -Dskip.installnodenpm -Dskip.npm
+
+cd ..
+mkdir -p keycloak-providers
+jar_file="$(ls -1t khalibre-account-ui/target/khalibre-account-ui-*.jar | head -n1)"
+cp -f "${jar_file}" "keycloak-providers/$(basename "${jar_file}")"
+
+echo ""
+echo "=> Built theme JAR: ${jar_file}"
+echo "=> Copied to: keycloak-providers/$(basename "${jar_file}")"
+'''
+
+[tasks."deploy:khalibre-account-ui"]
+description = "Build the khalibre-account-ui theme and restart Keycloak to load it"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+mise run build:khalibre-account-ui
+echo "==> Restarting Keycloak to load the new account UI theme..."
+docker restart mfa-keycloak
+echo ""
+echo "=> Deployment complete. Keycloak is restarting."
+echo "   Watch logs with:  mise run logs:keycloak"
 '''
 
 [tasks."deploy:keycloak-provider"]

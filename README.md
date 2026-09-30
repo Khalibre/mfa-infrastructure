@@ -25,6 +25,10 @@ Bring up the entire stack (fetches Vault secrets, generates `.env`, writes certi
 mise run start
 ```
 
+Before the containers start, this also creates `keycloak-providers/` and builds the provider JAR and
+the khalibre-account-ui theme JAR into it, so `/opt/keycloak/providers` is populated on container
+start.
+
 If a database backup was downloaded from S3 into `databases/`, `start` will print the exact `mise run db:restore` command to load it.
 
 ### Access URLs
@@ -60,7 +64,10 @@ Manage the stack easily using `mise run <task>`:
 | `pull` | Pull latest Docker images |
 | `db:export` | Dump the Keycloak and PrivacyIDEA databases into `databases/mariadb_backup_<timestamp>.tar.gz` |
 | `db:restore [file]` | Restore MariaDB databases from a `.tar.gz` backup file; defaults to the most recent file in `databases/` if none is given |
-| `build:keycloak-provider` | Build the Keycloak provider JAR |
+| `build:keycloak-providers` | Create `keycloak-providers/`, then build the provider JAR and the khalibre-account-ui theme JAR into it |
+| `build:keycloak-provider` | Build the Keycloak provider JAR (runs tests) |
+| `build:khalibre-account-ui` | Build the khalibre-account-ui theme JAR and copy it to `keycloak-providers/` |
+| `deploy:khalibre-account-ui` | Build the khalibre-account-ui theme JAR and restart Keycloak to load it |
 | `deploy:keycloak-provider` | Build and deploy the provider JAR into the running Keycloak container |
 | `clean` | **DANGER**: Stop stack, delete volumes, DB backups, and remove generated certs |
 
@@ -76,7 +83,42 @@ mise run build:keycloak-provider
 mise run deploy:keycloak-provider
 ```
 
-The provider JAR is mounted into the Keycloak container at `/opt/keycloak/providers` so it's available on container start.
+The provider JAR is copied into `keycloak-providers/`, which is mounted into the Keycloak container at
+`/opt/keycloak/providers` so it's available on container start.
+
+## Keycloak Providers
+
+`keycloak-providers/` is the folder bind-mounted at `/opt/keycloak/providers`. It is gitignored (only
+`.gitkeep` is tracked), so it is created and populated automatically before Keycloak starts:
+
+```bash
+# Create keycloak-providers/ and build every JAR into it
+mise run build:keycloak-providers
+```
+
+This runs on every `mise run start` and `mise run start:keycloak`, and produces:
+
+| JAR | Source |
+|---|---|
+| `keycloak-provider-1.0.0.jar` | `keycloak-provider/` (Gradle `assemble`, tests skipped) |
+| `khalibre-account-ui-26.1.3.jar` | `khalibre-account-ui/` (npm + Maven) |
+
+## Khalibre Account UI
+
+`khalibre-account-ui/` is the Vite/React account UI theme, built on the official
+`@keycloak/keycloak-account-ui` package (pinned to the server version, `26.1.3`).
+
+```bash
+# Build the theme JAR and copy it to keycloak-providers/
+mise run build:khalibre-account-ui
+
+# Build and restart Keycloak so it serves the new bundle
+mise run deploy:khalibre-account-ui
+```
+
+The build runs `npm install` → `vite build` → `mvn package`, which bundles `dist/` and
+`maven-resources/` into `target/khalibre-account-ui-26.1.3.jar`. The JAR is then copied to
+`keycloak-providers/`, so `mise run start` picks it up automatically.
 
 ## Backup and Restore
 
