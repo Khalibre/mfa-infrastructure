@@ -11,5 +11,7 @@ databases/*tar.gz
 .agents
 skills-lock.json
 .idea
-keycloak-providers/*
-!keycloak-providers/.gitkeep
+keycloak-providers
+**/target
+**/dist
+**/node

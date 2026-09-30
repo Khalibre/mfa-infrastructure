@@ -1,0 +1,10 @@
+{
+  "themes": [
+    {
+      "name": "khalibre-account",
+      "types": [
+        "account"
+      ]
+    }
+  ]
+}

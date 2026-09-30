@@ -1,0 +1,19 @@
+import "@patternfly/patternfly/patternfly-addons.css";
+import "@patternfly/react-core/dist/styles/base.css";
+
+import { KeycloakProvider } from "@keycloak/keycloak-account-ui";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { environment } from "./environment";
+import { i18n } from "./i18n";
+import { Root } from "./root/Root";
+
+i18n.init().then(() => {
+  ReactDOM.createRoot(document.getElementById("app")!).render(
+    <React.StrictMode>
+      <KeycloakProvider environment={environment}>
+        <Root />
+      </KeycloakProvider>
+    </React.StrictMode>
+  );
+});
