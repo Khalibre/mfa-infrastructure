@@ -1,7 +1,8 @@
 import { useEnvironment } from "@keycloak/keycloak-account-ui";
 import { KeycloakMasthead, label } from "@keycloak/keycloak-ui-shared";
-import { Button } from "@patternfly/react-core";
+import { Button, PageContext } from "@patternfly/react-core";
 import { ExternalLinkSquareAltIcon } from "@patternfly/react-icons";
+import { MouseEvent, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { useHref } from "react-router-dom";
 
@@ -33,6 +34,7 @@ const ReferrerLink = () => {
 export const Header = () => {
   const { environment, keycloak } = useEnvironment();
   const { t } = useTranslation();
+  const { onSidebarToggle } = useContext(PageContext);
 
   const brandImage = environment.logo || "logo.svg";
   const logoUrl = environment.logoUrl ? environment.logoUrl : "/";
@@ -40,6 +42,13 @@ export const Header = () => {
 
   // User can indicate that he wants an internal URL by starting it with "/"
   const indexHref = logoUrl.startsWith("/") ? internalLogoHref : logoUrl;
+
+  const handleClickCapture = (event: MouseEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement;
+    if (target.closest('#nav-toggle')) {
+      onSidebarToggle();
+    }
+  };
 
   return (
     <KeycloakMasthead
@@ -55,6 +64,7 @@ export const Header = () => {
         className: style.brand,
       }}
       toolbarItems={[<ReferrerLink key="link" />]}
+      onClickCapture={ handleClickCapture }
     />
   );
 };
