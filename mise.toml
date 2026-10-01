@@ -334,6 +334,10 @@ if ! command -v npm >/dev/null 2>&1; then
 fi
 command -v npm >/dev/null 2>&1 || { echo "Error: npm not found (nvm not loaded)."; exit 1; }
 
+# @swc/core refuses to load its native binding when its cache root is group-writable, which fails
+# the build with "Failed to load native binding". Default to a private directory under $HOME.
+export SWC_NATIVE_BINDING_CACHE="${SWC_NATIVE_BINDING_CACHE:-$HOME/.swc-cache}"
+
 cd khalibre-account-ui
 
 npm ci --no-audit --no-fund 2>/dev/null || npm install --no-audit --no-fund
