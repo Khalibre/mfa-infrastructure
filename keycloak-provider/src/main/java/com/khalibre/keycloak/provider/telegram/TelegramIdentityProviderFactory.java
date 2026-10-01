@@ -14,6 +14,7 @@ public class TelegramIdentityProviderFactory extends
   AbstractIdentityProviderFactory<TelegramIdentityProvider> {
 
   public static final String PROVIDER_ID = "telegram";
+  public static final String AUTO_LINK_BY_PHONE_NUMBER_KEY = "autoLinkByPhoneNumber";
 
   @Override
   public String getName() {
@@ -34,7 +35,7 @@ public class TelegramIdentityProviderFactory extends
   public List<ProviderConfigProperty> getConfigProperties() {
     return ProviderConfigurationBuilder.create()
       .property()
-      .name(TelegramIdentityProvider.AUTO_LINK_BY_PHONE_NUMBER_KEY)
+      .name(AUTO_LINK_BY_PHONE_NUMBER_KEY)
       .label("Auto Link By Phone Number")
       .helpText(
         "Automatically link Telegram account to existing Keycloak user with matching phone number.")

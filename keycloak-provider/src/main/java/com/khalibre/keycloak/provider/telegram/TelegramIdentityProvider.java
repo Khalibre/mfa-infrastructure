@@ -1,5 +1,7 @@
 package com.khalibre.keycloak.provider.telegram;
 
+import static com.khalibre.keycloak.provider.telegram.TelegramIdentityProviderFactory.AUTO_LINK_BY_PHONE_NUMBER_KEY;
+
 import jakarta.annotation.Nonnull;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -28,17 +30,18 @@ import org.keycloak.models.UserModel;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.services.ErrorPage;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.keycloak.sessions.RootAuthenticationSessionModel;
 import org.keycloak.utils.StringUtil;
 
 public class TelegramIdentityProvider extends
   AbstractIdentityProvider<OAuth2IdentityProviderConfig> {
 
-  public static final String ATTR_TG_FIRST_NAME = "telegram-first-name";
-  public static final String ATTR_TG_LAST_NAME = "telegram-last-name";
-  public static final String ATTR_TG_USERNAME = "telegram-username";
-  public static final String ATTR_TG_USER_ID = "telegram-user-id";
-  public static final String ATTR_TG_USER_PHONE_NUMBER = "telegram-phone-number";
-  public static final String AUTO_LINK_BY_PHONE_NUMBER_KEY = "autoLinkByPhoneNumber";
+  private static final String ATTR_TG_FIRST_NAME = "telegram-first-name";
+  private static final String ATTR_TG_LAST_NAME = "telegram-last-name";
+  private static final String ATTR_TG_USERNAME = "telegram-username";
+  private static final String ATTR_TG_USER_ID = "telegram-user-id";
+  private static final String ATTR_TG_USER_PHONE_NUMBER = "telegram-phone-number";
+  private static final String ATTR_TG_REQUIRE_PHONE_MATCH = "telegram-require-phone-match";
 
   public TelegramIdentityProvider(KeycloakSession session, OAuth2IdentityProviderConfig config) {
     super(session, config);
@@ -181,7 +184,19 @@ public class TelegramIdentityProvider extends
 
         boolean isLinkMode = authSession.getAuthNote("LINKING_IDENTITY_PROVIDER") != null;
 
-        String autoLinkUsername = findAutoLinkUsername(auth.getPhoneNumber());
+        String autoLinkUsername;
+        if (isLinkMode) {
+          UserModel authenticatedUser = findAuthenticatedUser(authSession);
+          if (authenticatedUser == null
+            || (isPhoneMatchRequired(authenticatedUser)
+            && !isPhoneMatched(authenticatedUser, auth.getPhoneNumber()))) {
+            return linkRejected(sessionId, auth);
+          }
+          autoLinkUsername = authenticatedUser.getUsername();
+        } else {
+          autoLinkUsername = findAutoLinkUsername(auth.getPhoneNumber());
+        }
+
         BrokeredIdentityContext context = buildContext(
           auth.getTelegramUserId(),
           autoLinkUsername,
@@ -242,8 +257,34 @@ public class TelegramIdentityProvider extends
       return user != null;
     }
 
+    private UserModel findAuthenticatedUser(AuthenticationSessionModel authSession) {
+      UserModel user = authSession.getAuthenticatedUser();
+      if (user != null) {
+        return user;
+      }
+
+      UserSessionModel userSession = session.getContext().getUserSession();
+      if (userSession == null) {
+        RootAuthenticationSessionModel rootSession = authSession.getParentSession();
+        if (rootSession != null) {
+          RealmModel realm = session.getContext().getRealm();
+          userSession = session.sessions().getUserSession(realm, rootSession.getId());
+        }
+      }
+      return userSession != null ? userSession.getUser() : null;
+    }
+
     private String findAutoLinkUsername(String phoneNumber) {
-      if (!provider.isAutoLinkByPhoneNumberEnabled() || StringUtil.isBlank(phoneNumber)) {
+      if (!provider.isAutoLinkByPhoneNumberEnabled()) {
+        return null;
+      }
+
+      UserModel user = findUserByPhoneNumber(phoneNumber);
+      return user != null ? user.getUsername() : null;
+    }
+
+    private UserModel findUserByPhoneNumber(String phoneNumber) {
+      if (StringUtil.isBlank(phoneNumber)) {
         return null;
       }
 
@@ -264,7 +305,7 @@ public class TelegramIdentityProvider extends
         if (provider.session.users().getFederatedIdentity(realm, user, providerAlias) != null) {
           return null;
         }
-        return user.getUsername();
+        return user;
       }
     }
 
@@ -287,6 +328,38 @@ public class TelegramIdentityProvider extends
       context.setUserAttribute(ATTR_TG_FIRST_NAME, firstName);
       context.setUserAttribute(ATTR_TG_LAST_NAME, lastName);
       return context;
+    }
+
+    private boolean isPhoneMatchRequired(UserModel user) {
+      String value = user.getFirstAttribute(ATTR_TG_REQUIRE_PHONE_MATCH);
+      return !StringUtil.isBlank(value) && value.equalsIgnoreCase("true");
+    }
+
+    private boolean isPhoneMatched(UserModel authenticatedUser, String phoneNumber) {
+      if (StringUtil.isBlank(phoneNumber)) {
+        return false;
+      }
+
+      String userPhoneNumber = authenticatedUser.getFirstAttribute(ATTR_TG_USER_PHONE_NUMBER);
+      if (StringUtil.isBlank(userPhoneNumber)) {
+        return true;
+      }
+
+      if (phoneNumber.equals(userPhoneNumber)) {
+        return true;
+      }
+
+      UserModel matchedUser = findUserByPhoneNumber(phoneNumber);
+      return matchedUser != null && matchedUser.getId().equals(authenticatedUser.getId());
+    }
+
+    private Response linkRejected(String sessionId, AuthState auth) {
+      AuthStateSession.remove(session, sessionId);
+      String message = "telegram.link-phone-mismatch";
+      sendToTelegram(auth, message);
+      event.event(EventType.IDENTITY_PROVIDER_LOGIN);
+      event.error(Errors.IDENTITY_PROVIDER_LOGIN_FAILURE);
+      return ErrorPage.error(session, null, Status.BAD_REQUEST, message);
     }
 
     private Response errorIdentityProviderLogin(String message) {
