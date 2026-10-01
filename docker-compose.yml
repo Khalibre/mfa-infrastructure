@@ -33,7 +33,7 @@ services:
 
   smtp4dev:
     image: ${SMTP4DEV_IMAGE}
-    container_name: smtp4dev
+    container_name: mfa-smtp4dev
     restart: unless-stopped
     environment:
       ServerOptions__BasePath: '/'
