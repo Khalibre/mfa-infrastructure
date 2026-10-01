@@ -1,10 +1,377 @@
 /* CUSTOM styling */
 
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("../fonts/plus-jakarta-sans-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("../fonts/plus-jakarta-sans-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0,
+    U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  --edc-font: "Plus Jakarta Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, Helvetica,
+    Arial, sans-serif;
+  --edc-navy: #2b3072;
+  --edc-navy-hover: #22275c;
+  --edc-navy-soft: #eef0fb;
+  --edc-navy-border: #b9bfee;
+  --edc-ink: #14162b;
+  --edc-body: #5b6478;
+  --edc-muted: #8b94a7;
+  --edc-bg: #f4f5f9;
+  --edc-card: #ffffff;
+  --edc-border: #d7dae2;
+  --edc-amber-bg: #fdf7e6;
+  --edc-amber-bar: #d9a300;
+  --edc-amber-ink: #6b5410;
+  --edc-danger: #c0392b;
+  --edc-danger-bg: #fdf0ef;
+  --edc-danger-border: #f2c9c4;
+}
+
+html,
+body {
+  background: var(--edc-bg);
+}
+
+body.login-pf,
+.login-pf-page {
+  background: var(--edc-bg);
+  font-family: var(--edc-font);
+}
+
+.kc-login,
+.login-pf-page {
+  background: var(--edc-bg);
+  padding: 48px 16px;
+  min-height: 100vh;
+}
+
+.edc-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.edc-brand-seal {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  object-fit: contain;
+}
+
+.edc-brand-text {
+  text-align: center;
+}
+
+.edc-brand-name {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 3.5px;
+  color: var(--edc-navy);
+}
+
+.edc-brand-sub {
+  margin-top: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 1.8px;
+  color: var(--edc-muted);
+}
+
+.edc-help {
+  margin-top: 26px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--edc-muted);
+}
+
+.card-pf,
+.login-pf-page .card-pf {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--edc-card);
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(20, 22, 43, 0.08);
+  padding: 40px 44px;
+}
+
+.login-pf-page h1#kc-page-title {
+  color: var(--edc-ink);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  margin: 0 0 8px;
+}
+
+.login-pf-page .subtitle {
+  color: var(--edc-body);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  margin: 0 0 26px;
+}
+
+.login-pf-page #kc-form-options,
+.login-pf-page .login-pf-form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.login-pf-page #kc-form-options .checkbox label {
+  color: var(--edc-body);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.login-pf-page #kc-form-options input[type="checkbox"] {
+  accent-color: var(--edc-navy);
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  vertical-align: -3px;
+}
+
+.login-pf-page .kc-form-group,
+.login-pf-page #kc-form-buttons {
+  margin-bottom: 20px;
+}
+
+.login-pf-page .col-xs-12,
+.login-pf-page .col-sm-12,
+.login-pf-page .col-md-12,
+.login-pf-page .col-lg-12,
+.login-pf-page .pf-v5-c-form__group,
+.login-pf-page .pf-v5-c-input-wrapper,
+.login-pf-page .pf-v5-u-mb-md-on-md {
+  float: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.login-pf-page input[type="text"],
+.login-pf-page input[type="email"],
+.login-pf-page input[type="password"] {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--edc-border);
+  border-radius: 8px;
+  font-size: 15px;
+  color: var(--edc-ink);
+  padding: 12px 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.login-pf-page input[type="text"]:focus,
+.login-pf-page input[type="email"]:focus,
+.login-pf-page input[type="password"]:focus {
+  border-color: var(--edc-navy);
+  box-shadow: 0 0 0 3px rgba(43, 48, 114, 0.12);
+  outline: none;
+}
+
+.login-pf-page input::placeholder {
+  color: var(--edc-muted);
+}
+
+.login-pf-page label,
+.login-pf-page .pf-v5-c-form__label {
+  color: var(--edc-ink);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  margin-bottom: 7px;
+  display: inline-block;
+}
+
+.login-pf-page .required {
+  color: var(--edc-danger);
+  margin-left: 3px;
+}
+
+.login-pf-page #kc-login,
+.login-pf-page .btn-primary,
+.login-pf-page .btn-block {
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
+  border: none;
+  border-radius: 8px;
+  background: var(--edc-navy);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  padding: 14px 16px;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background-color 0.15s ease, transform 0.12s ease;
+}
+
+.login-pf-page #kc-login:hover,
+.login-pf-page .btn-primary:hover {
+  background: var(--edc-navy-hover);
+}
+
+.login-pf-page #kc-login:active {
+  transform: translateY(1px);
+}
+
+.login-pf-page #kc-login:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+.login-pf-page #kc-login.is-loading {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+}
+
+.login-pf-page #kc-login.is-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: edc-spin 0.7s linear infinite;
+}
+
+@keyframes edc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-pf-page #kc-login.is-loading::after {
+    animation-duration: 2.4s;
+  }
+}
+
+.login-pf-page a,
+.login-pf-page .kc-form-options a,
+.login-pf-page #kc-registration a {
+  color: var(--edc-navy);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.login-pf-page a:hover {
+  color: var(--edc-navy-hover);
+  text-decoration: underline;
+}
+
+.edc-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 24px 0;
+  color: var(--edc-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.6px;
+}
+
+.edc-divider::before,
+.edc-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--edc-border);
+}
+
+.edc-telegram-btn {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px 16px;
+  border: 1px solid var(--edc-navy);
+  border-radius: 8px;
+  background: var(--edc-card);
+  color: var(--edc-navy);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.edc-telegram-btn:hover {
+  background: var(--edc-navy-soft);
+  text-decoration: none;
+}
+
+.edc-telegram-btn img {
+  width: 20px;
+  height: 20px;
+}
+
+.edc-social ul,
+.login-pf-page .kc-social-providers ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.login-pf-page .edc-social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 16px;
+  border: 1px solid var(--edc-navy);
+  border-radius: 8px;
+  background: var(--edc-card);
+  color: var(--edc-navy);
+  font-size: 15px;
+  font-weight: 600;
+  transition: background-color 0.15s ease;
+}
+
+.login-pf-page .edc-social-btn:hover {
+  background: var(--edc-navy-soft);
+  color: var(--edc-navy);
+  text-decoration: none;
+}
+
 .login-pf body {
-  background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+  background: var(--edc-bg);
   min-height: 100vh;
   margin: 0;
-  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--edc-font);
 }
 
 .subtitle {
@@ -90,4 +457,285 @@
 .kh-back-link:hover {
   color: #0088cc;
   text-decoration: underline;
+}
+
+/* privacyIDEA.ftl renders inside template.ftl's .card-pf, so the card itself comes from
+   .card-pf above. This block only resets the inner form to avoid a card nested in a card. */
+#kc-otp-login-form {
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+#kc-otp-login-form .kc-form-group {
+  margin-bottom: 18px;
+}
+
+#kc-otp-login-form .col-xs-12,
+#kc-otp-login-form .col-sm-12,
+#kc-otp-login-form .col-md-12,
+#kc-otp-login-form .col-lg-12,
+#kc-otp-login-form .pf-v5-c-form__group,
+#kc-otp-login-form .pf-v5-c-input-wrapper,
+#kc-otp-login-form .pf-v5-u-mb-md-on-md {
+  float: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#kc-otp-login-form input[type="text"],
+#kc-otp-login-form input[type="password"] {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--edc-border);
+  border-radius: 8px;
+  font-size: 15px;
+  padding: 11px 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#kc-otp-login-form h4 {
+  color: var(--edc-ink);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0 0 4px;
+}
+
+#kc-otp-login-form label {
+  color: var(--edc-body);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+#kc-otp-login-form input[type="text"],
+#kc-otp-login-form input[type="password"] {
+  border: 1px solid var(--edc-border);
+  border-radius: 8px;
+  font-size: 15px;
+  padding: 11px 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#kc-otp-login-form input[type="text"]:focus,
+#kc-otp-login-form input[type="password"]:focus {
+  border-color: var(--edc-navy);
+  box-shadow: 0 0 0 3px rgba(43, 48, 114, 0.12);
+  outline: none;
+}
+
+#kc-otp-login-form #otp {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: 10px;
+  text-align: center;
+  padding: 14px 10px;
+  color: var(--edc-ink);
+}
+
+#kc-otp-login-form .center-text {
+  margin-bottom: 18px;
+}
+
+#kc-otp-login-form .center-text img {
+  max-height: 180px;
+}
+
+#kc-otp-login-form #kc-login {
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
+  margin-top: 22px;
+  padding: 13px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--edc-navy);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.12s ease;
+}
+
+#kc-otp-login-form #kc-login:hover {
+  background: var(--edc-navy-hover);
+}
+
+#kc-otp-login-form #kc-login:active {
+  transform: translateY(1px);
+}
+
+#kc-otp-login-form #alternateToken {
+  display: block;
+  float: none;
+  clear: both;
+  width: 100%;
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid var(--edc-border);
+}
+
+#kc-otp-login-form #alternateToken > * {
+  float: none;
+}
+
+#kc-otp-login-form #alternateTokenHeader {
+  display: block;
+  float: none;
+  width: 100%;
+  color: var(--edc-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  text-align: center;
+  margin: 0 0 14px;
+}
+
+#kc-otp-login-form #alternateToken .pf-v5-c-button {
+  display: block;
+  float: none;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  padding: 11px 16px;
+  border: 1px solid var(--edc-border);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--edc-ink);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+#kc-otp-login-form #cancelEnrollment {
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
+  float: none;
+  margin-top: 12px;
+  padding: 11px 16px;
+  border: 1px solid var(--edc-border);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--edc-ink);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+}
+
+#kc-otp-login-form #cancelEnrollment:hover {
+  border-color: var(--edc-navy);
+  background: var(--edc-navy-soft);
+}
+
+#kc-otp-login-form #alternateToken .pf-v5-c-button:hover {
+  border-color: var(--edc-navy);
+  background: var(--edc-navy-soft);
+}
+
+#kc-otp-login-form #kc-login.kh-btn-inactive {
+  cursor: not-allowed;
+  filter: grayscale(0.35);
+  opacity: 0.55;
+  box-shadow: none;
+  transform: none;
+}
+
+#kc-otp-login-form #kc-login.kh-btn-inactive:hover {
+  filter: grayscale(0.35);
+  opacity: 0.55;
+  box-shadow: none;
+}
+
+#kc-otp-login-form #kc-login:disabled {
+  cursor: wait;
+}
+
+#kc-otp-login-form #kc-login.is-loading {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+  opacity: 0.9;
+  filter: none;
+  box-shadow: none;
+}
+
+#kc-otp-login-form #kc-login.is-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 17px;
+  height: 17px;
+  margin: -8.5px 0 0 -8.5px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: edc-spin 0.7s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #kc-otp-login-form #kc-login.is-loading::after {
+    animation-duration: 2.4s;
+  }
+}
+
+#kc-otp-login-form label[for="login-error"] {
+  display: block;
+  float: none;
+  width: 100%;
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  background: #fdf0ef;
+  border: 1px solid #f2c9c4;
+  border-left: 3px solid #c0392b;
+  border-radius: 8px;
+  color: #8a1f13;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.55;
+  text-transform: capitalize;
+}
+
+#kc-otp-login-form label[for="login-error"] .pf-c-form__label-text {
+  color: inherit;
+  font-weight: inherit;
+}
+
+#kc-otp-login-form label[for="login-error"] p {
+  margin: 0;
+}
+
+#kc-otp-login-form .hint {
+  color: var(--edc-body);
+  font-size: 13px;
+  text-align: center;
+  margin-top: 14px;
+}
+
+#kc-otp-login-form #kc-otp-msg,
+#kc-otp-login-form .alert {
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.login-pf #kc-otp-login-form .kc-form-card {
+  padding: 0;
+}
+
+.kc-social-icon-text {
+  left: 0;
 }
