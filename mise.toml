@@ -287,6 +287,57 @@ echo "=> Deployment complete. Keycloak is restarting."
 echo "   Watch logs with:  mise run logs:keycloak"
 '''
 
+[tasks."dev:account-ui"]
+description = "Run khalibre-account-ui in local mode: Vite dev server with HMR, served by the running Keycloak"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+# mise tasks do not inherit the interactive shell, so nvm-managed node is missing.
+if ! command -v npm >/dev/null 2>&1; then
+  export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+  # shellcheck disable=SC1091
+  [ -s "${NVM_DIR}/nvm.sh" ] && . "${NVM_DIR}/nvm.sh"
+fi
+command -v npm >/dev/null 2>&1 || { echo "Error: npm not found (nvm not loaded)."; exit 1; }
+
+# 1. Point Keycloak at the Vite dev server (KC_ACCOUNT_VITE_URL) and recreate it
+echo "==> Enabling account UI dev mode (KC_ACCOUNT_VITE_URL)..."
+docker compose -f docker-compose.yml -f docker-compose.dev-account-ui.yml up -d keycloak
+
+# 2. Install dependencies once
+cd khalibre-account-ui
+if [ ! -d node_modules ]; then
+  echo "==> Installing dependencies..."
+  npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+fi
+
+# 3. Run Vite, bound to 0.0.0.0 so it is reachable from the browser
+set -a; source ../.env; set +a
+realm_hint="$(docker exec mfa-mariadb mariadb -uroot -p"${MYSQL_ROOT_PASSWORD}" -N -B \
+  -e "SELECT realm FROM ${KEYCLOAK_DB_NAME}.REALM ORDER BY name LIMIT 1;" 2>/dev/null || true)"
+echo "--------------------------------------------------------"
+if [ -n "$realm_hint" ]; then
+  echo "Account console: https://${KEYCLOAK_HOST}/realms/${realm_hint}/account"
+else
+  echo "Account console: https://${KEYCLOAK_HOST}/realms/<realm>/account"
+fi
+echo "Vite dev server: http://localhost:5173 (loaded BY the account page, never open it directly)"
+echo "Leave dev mode:  mise run dev:account-ui:stop"
+echo "--------------------------------------------------------"
+exec npm run dev -- --host 0.0.0.0 --strictPort
+'''
+
+[tasks."dev:account-ui:stop"]
+description = "Leave account UI dev mode and serve the bundled theme JAR again"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+docker compose -f docker-compose.yml up -d --force-recreate keycloak
+echo ""
+echo "=> Keycloak recreated without KC_ACCOUNT_VITE_URL (bundled theme JAR)."
+'''
+
 [tasks."deploy:keycloak-provider"]
 description = "Build the provider JAR and deploy it into the running Keycloak container"
 run = '''

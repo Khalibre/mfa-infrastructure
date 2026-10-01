@@ -4,7 +4,15 @@ This is a template to build a custom Keycloak Account UI using the [Keycloak Acc
 
 ## Getting started
 
-To use HMR (Hot module replacement) in development, run the following command:
+In this repository, the quickest way to run the UI with HMR against the dockerized Keycloak
+is the mise task, which wires `KC_ACCOUNT_VITE_URL` for you:
+
+```bash
+mise run dev:account-ui        # from the repository root
+mise run dev:account-ui:stop   # back to the bundled theme JAR
+```
+
+Alternatively, to set the Vite dev server up manually, run the following command:
 
 ```bash
 pnpm i

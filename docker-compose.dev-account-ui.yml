@@ -1,0 +1,18 @@
+# Overlay for local development of the account console (HMR).
+#
+# Used by `mise run dev:account-ui`:
+#   docker compose -f docker-compose.yml -f docker-compose.dev-account-ui.yml up -d keycloak
+#
+# In development mode Keycloak exposes KC_ACCOUNT_VITE_URL to the account theme as
+# the `devServerUrl` template variable (see AccountConsole), and the theme's
+# index.ftl then loads /@vite/client and /src/main.tsx straight from that URL.
+# No request is proxied through Keycloak, so the URL must be reachable from the
+# BROWSER — use localhost here, not host.docker.internal (which only resolves
+# inside Docker). The Vite server must therefore listen on 0.0.0.0:5173.
+#
+# Revert with `mise run dev:account-ui:stop`, which recreates Keycloak from
+# docker-compose.yml only.
+services:
+  keycloak:
+    environment:
+      KC_ACCOUNT_VITE_URL: http://localhost:5173
