@@ -1,0 +1,44 @@
+:root {
+  --edc-primary: #2c327e;
+
+  --color-dark: var(--pf-v5-global--Color--100);
+  --color-dark-100: var(--pf-v5-global--Color--200);
+  --color-dark-200: var(--pf-v5-global--BorderColor--200);
+  --color-dark-300: var(--pf-v5-global--BorderColor--300);
+  --color-dark-400: var(--pf-v5-global--BorderColor--400);
+
+  --bg-white: var(--pf-v5-global--BackgroundColor--100);
+  --bg-color: #f0f0f0;
+
+  --bg-edc-primary: #f2f3f9;
+  --bg-blue-light: var(--pf-v5-global--palette--blue-50);
+
+  --text-color: var(--pf-v5-global--Color--200);
+
+  --border-radius-md: 0.3rem;
+  --border-color-dark-300: var(--pf-v5-global--BorderColor--300);
+
+  --space-size-sm: 0.5rem;
+  --space-size-md: 1rem;
+
+  --pf-v5-c-page__main-section--m-light--BackgroundColor: var(--bg-color) !important;
+}
+
+.pf-v5-theme-dark {
+  --edc-primary: unset;
+  --pf-v5-c-page__main-section--m-light--BackgroundColor: var(--pf-v5-global--BackgroundColor--200);
+
+  --color-dark: var(--pf-v5-global--Color--100);
+  --color-dark-100: var(--pf-v5-global--Color--200);
+  --color-dark-200: var(--pf-v5-global--BorderColor--100);
+  --color-dark-300: var(--pf-v5-global--BorderColor--200);
+  --color-dark-400: var(--pf-v5-global--BorderColor--300);
+
+  --bg-white: var(--pf-v5-global--BackgroundColor--300);
+  --bg-color: var(--pf-v5-global--BackgroundColor--200);
+
+  --bg-edc-primary: var(--pf-v5-c-nav__link--hover--BackgroundColor);
+  --bg-blue-light: var(--pf-v5-c-nav__link--hover--BackgroundColor);
+
+  --text-color: var(--pf-v5-global--Color--100);
+}
