@@ -1,1 +1,2 @@
 com.khalibre.keycloak.provider.telegram.TelegramAuthResourceFactory
+com.khalibre.keycloak.provider.account.AccountActivitiesResourceFactory

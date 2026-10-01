@@ -22,6 +22,7 @@ dependencies {
     compileOnly("org.keycloak:keycloak-server-spi:$keycloakVersion")
     compileOnly("org.keycloak:keycloak-server-spi-private:$keycloakVersion")
     compileOnly("org.keycloak:keycloak-core:$keycloakVersion")
+    compileOnly("org.keycloak:keycloak-services:$keycloakVersion")
     compileOnly("org.keycloak:keycloak-model-infinispan:$keycloakVersion")
     compileOnly("org.jboss.logging:jboss-logging:$jbossLoggingVersion")
     implementation("jakarta.ws.rs:jakarta.ws.rs-api:3.1.0")
