@@ -111,6 +111,8 @@ services:
       KC_PROXY_HEADERS: xforwarded
       KC_HOSTNAME: ${KEYCLOAK_HOST}
       KC_HOSTNAME_STRICT: 'false'
+      PI_ADMIN_USER: ${PI_ADMIN_USER}
+      PI_ADMIN_PASSWORD: ${PI_ADMIN_PASSWORD}
       # Telegram bot update mode: "polling" (DEV, long-polling) or "webhook" (PRD)
       TELEGRAM_BOT_MODE: ${TELEGRAM_BOT_MODE}
       KC_TRUSTSTORE_PATHS: /opt/keycloak/certs/truststore/root-ca.crt
@@ -174,7 +176,13 @@ services:
       - 'privacyidea-data:/data/privacyidea'
       - './config/privacyidea/keys/encfile:/etc/privacyidea/encfile:ro'
       - './config/privacyidea/scripts:/mnt/privacyidea/scripts:ro'
-
+      # privacyIDEA 3.12.2 sends the bare webhook content_type option ("json"/"urlencoded") as the
+      # HTTP Content-Type header, which is not a valid media type, so Keycloak fails to parse it
+      # and the IPN returns 500. This is the upstream fix backported from privacyidea/privacyidea
+      # commit 6931e5e ("add mapping to allow use of old values"). The mapping keeps existing
+      # handler rows, which store "json"/"urlencoded", working.
+      # Drop this mount once PRIVACYIDEA_IMAGE moves to 3.13+, which contains the fix upstream.
+      - './config/privacyidea/webhookeventhandler.py:/opt/privacyidea/lib/python3.12/site-packages/privacyidea/lib/eventhandler/webhookeventhandler.py:ro'
     labels:
       - 'multifactor-authentication.project=true'
       - 'traefik.enable=true'
