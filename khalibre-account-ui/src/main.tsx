@@ -1,5 +1,6 @@
 import "@patternfly/patternfly/patternfly-addons.css";
 import "@patternfly/react-core/dist/styles/base.css";
+import "./main.css";
 
 import { KeycloakProvider } from "@keycloak/keycloak-account-ui";
 import React from "react";

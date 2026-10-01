@@ -1,0 +1,173 @@
+.activityCard {
+  border: 1px solid var(--color-dark-200);
+  background-color: var(--bg-white);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  width: 1200px;
+}
+
+.activityTable {
+  background-color: var(--bg-white);
+
+  thead {
+    height: 3.5rem;
+    border-bottom: 1px solid var(--color-dark-200);
+
+    th {
+      color: var(--text-color);
+    }
+
+    th:first-child {
+      padding-left: var(--space-size-md);
+    }
+  }
+
+  tbody tr {
+    height: 4rem;
+    border-bottom: 1px solid var(--color-dark-400);
+
+    td:first-child {
+      color: var(--color-dark-100);
+      padding-left: var(--space-size-md);
+    }
+  }
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid var(--color-dark-200);
+
+  .searchFilter {
+    display: flex;
+    gap: 16px;
+  }
+}
+
+.searchInput {
+  min-width: 20rem;
+
+  border: 1px solid var(--color-dark-200);
+  border-radius: var(--border-radius-md);
+  background-color: var(--bg-white);
+
+
+  &::before {
+    border-style: none;
+  }
+
+  &::after {
+    border: none;
+  }
+
+  > :is(input, select, textarea):focus {
+    outline: none;
+  }
+
+  input {
+    padding: 0.5rem 1rem;
+  }
+}
+
+.dayFilter {
+  min-width: 180px;
+  background-color: var(--bg-white);
+}
+
+.menuToggle {
+  border: 1px solid var(--color-dark-200);
+  border-radius: var(--border-radius-md);
+  padding: 0.5rem 1rem;
+
+  &::before {
+    border-style: none;
+  }
+
+  &::after {
+    border: none;
+  }
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.tableLoading {
+  min-height: 17rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tableSpinner {
+  circle {
+    stroke: var(--edc-primary) !important;
+  }
+}
+
+.resultCell {
+  min-width: 120px;
+}
+
+.resultBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 50px;
+  border: 1px solid transparent;
+}
+
+.badgeSuccess {
+  color: #1e7e34;
+  background-color: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.badgeBlock {
+  color: #b91c1c;
+  background-color: #fef2f2;
+  border-color: #fecaca;
+}
+
+.emptyState {
+  height: 20rem;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--color-dark-200);
+
+  :global(.pf-v5-c-menu) {
+    background-color: var(--bg-white) !important;
+  }
+
+  :global(.pf-v5-c-pagination) {
+    padding: 0.5rem;
+  }
+}
+
+.alert {
+  margin-top: 16px;
+}
+
+.helpBanner {
+  width: 1200px;
+  background-color: var(--bg-blue-light);
+  border-left: 4px solid var(--edc-primary);
+  padding: 16px 20px;
+  border-radius: var(--border-radius-md);
+  font-size: 14px;
+  color: var(--color-dark);
+  margin: 24px 0;
+
+  p {
+    margin: 0;
+    line-height: 1.5;
+  }
+}
