@@ -30,6 +30,7 @@ import {
   useEnvironment,
   usePromise,
 } from "@keycloak/keycloak-account-ui";
+import styles from "./PageNav.module.css";
 
 type RootMenuItem = {
   id?: string;
@@ -53,9 +54,9 @@ export const PageNav = () => {
 
   usePromise((signal) => fetchContentJson({ signal, context }), setMenuItems);
   return (
-    <PageSidebar>
+    <PageSidebar className={styles.sidebar}>
       <PageSidebarBody>
-        <Nav>
+        <Nav className={styles.nav}>
           <NavList>
             <Suspense fallback={<Spinner />}>
               {menuItems
