@@ -76,7 +76,6 @@ export const routes: RouteObject[] = [
   SigningInRoute,
   ApplicationsRoute,
   GroupsRoute,
-  PersonalInfoRoute,
   ResourcesRoute,
   ContentRoute,
   AccountActivitiesRoute,
