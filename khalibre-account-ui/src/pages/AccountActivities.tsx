@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AccountEnvironment, Page, useAccountAlerts, useEnvironment } from "@keycloak/keycloak-account-ui";
-import { ToggleGroup, ToggleGroupItem } from "@patternfly/react-core";
 import {
   fetchAccountActivities,
   type AccountActivity,
+  type DayFilter,
 } from "../api/accountActivities";
 import { EventsTable } from "./EventsTable";
-import { isErrorActivity } from "../utils/events";
 
 const PAGE_SIZE = 25;
 
@@ -17,7 +16,7 @@ export const AccountActivities = () => {
   const { addError } = useAccountAlerts();
 
   const [page, setPage] = useState(1);
-  const [onlyErrors, setOnlyErrors] = useState(false);
+  const [dayFilter, setDayFilter] = useState<DayFilter>("30");
   const [activities, setActivities] = useState<AccountActivity[]>();
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -29,6 +28,7 @@ export const AccountActivities = () => {
     fetchAccountActivities(context, {
       first: (page - 1) * PAGE_SIZE,
       max: PAGE_SIZE,
+      dayFilter,
       signal: controller.signal,
     })
       .then((data) => {
@@ -50,14 +50,11 @@ export const AccountActivities = () => {
       });
 
     return () => controller.abort();
-  }, [context, page, t, addError]);
+  }, [context, page, dayFilter, t, addError]);
 
-  const visible = onlyErrors
-    ? (activities ?? []).filter(isErrorActivity)
-    : (activities ?? []);
-
-  const onFilter = useCallback((_event: unknown, selected: boolean) => {
-    setOnlyErrors(selected);
+  const onDayFilterChange = useCallback((nextFilter: DayFilter) => {
+    setDayFilter(nextFilter);
+    setPage(1);
   }, []);
 
   return (
@@ -65,29 +62,15 @@ export const AccountActivities = () => {
       title={t("accountActivities")}
       description={t("accountActivitiesDescription")}
     >
-      <ToggleGroup aria-label={t("accountActivitiesFilter")}>
-        <ToggleGroupItem
-          text={t("accountActivitiesAllEvents")}
-          buttonId="all-events"
-          isSelected={!onlyErrors}
-          onChange={onFilter}
-        />
-        <ToggleGroupItem
-          text={t("accountActivitiesOnlyErrors")}
-          buttonId="only-errors"
-          isSelected={onlyErrors}
-          onChange={onFilter}
-        />
-      </ToggleGroup>
-
       <EventsTable
-        activities={visible}
+        activities={activities ?? []}
         loading={loading}
+        dayFilter={dayFilter}
+        onDayFilter={onDayFilterChange}
         page={page}
         pageSize={PAGE_SIZE}
         hasMore={hasMore}
         onPage={setPage}
-        emptyLabel={t("accountActivitiesEmpty")}
       />
     </Page>
   );
