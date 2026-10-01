@@ -9,6 +9,10 @@
         "label": "linkedAccounts",
         "path": "account-security/linked-accounts",
         "isVisible": "isLinkedAccountsEnabled"
+      },
+      {
+        "label": "accountActivities",
+        "path": "account-security/account-activities"
       }
     ]
   },
@@ -32,9 +36,5 @@
     "label": "oid4vci",
     "path": "oid4vci",
     "isVisible":"isOid4VciEnabled"
-  },
-  {
-    "label": "myPage",
-    "path": "myPage"
   }
 ]
