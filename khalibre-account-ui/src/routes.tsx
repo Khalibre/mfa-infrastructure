@@ -11,7 +11,17 @@ import {
   Resources,
   SigningIn,
 } from "@keycloak/keycloak-account-ui";
-import { MyPage } from "./MyPage";
+import { lazy } from "react";
+
+// Lazy so the react-table chunk is only downloaded when the page is opened.
+const AccountActivities = lazy(() =>
+  import("./pages/AccountActivities.tsx").then((m) => ({ default: m.AccountActivities })),
+);
+
+export const AccountActivitiesRoute: RouteObject = {
+  path: "account-security/account-activities",
+  element: <AccountActivities />,
+};
 
 export const DeviceActivityRoute: RouteObject = {
   path: "account-security/device-activity",
@@ -43,10 +53,6 @@ export const ResourcesRoute: RouteObject = {
   element: <Resources />,
 };
 
-export type ContentComponentParams = {
-  componentId: string;
-};
-
 export const ContentRoute: RouteObject = {
   path: "content/:componentId",
   element: <ContentComponent />,
@@ -62,10 +68,6 @@ export const Oid4VciRoute: RouteObject = {
   path: "oid4vci",
   element: <Oid4Vci />,
 };
-export const MyPageRoute: RouteObject = {
-  path: "myPage",
-  element: <MyPage />,
-};
 
 export const routes: RouteObject[] = [
   PersonalInfoRoute,
@@ -77,6 +79,6 @@ export const routes: RouteObject[] = [
   PersonalInfoRoute,
   ResourcesRoute,
   ContentRoute,
-  MyPageRoute,
+  AccountActivitiesRoute,
   ...(environment.features.isOid4VciEnabled ? [Oid4VciRoute] : []),
 ];
