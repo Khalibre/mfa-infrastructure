@@ -67,6 +67,8 @@ export type AccountActivitiesResponse = {
     events: AccountActivity[];
 };
 
+export type DayFilter = "1" | "7" | "30" | "90";
+
 const isErrorType = (type: string) => type.endsWith("_ERROR");
 
 /**
@@ -91,8 +93,9 @@ export const fetchAccountActivities = async (
     {
         first,
         max,
+        dayFilter,
         signal,
-    }: { first: number; max: number; signal?: AbortSignal },
+    }: { first: number; max: number; dayFilter: DayFilter; signal?: AbortSignal },
 ): Promise<AccountActivitiesResponse> => {
     try {
         await keycloak.updateToken(5);
@@ -105,6 +108,7 @@ export const fetchAccountActivities = async (
     );
     url.searchParams.set("first", `${first}`);
     url.searchParams.set("max", `${max}`);
+    url.searchParams.set("days", dayFilter);
 
     const response = await fetch(url, {
         signal,
