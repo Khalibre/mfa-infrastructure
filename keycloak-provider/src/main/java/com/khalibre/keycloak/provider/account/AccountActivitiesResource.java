@@ -11,11 +11,13 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.keycloak.events.Event;
+import org.keycloak.events.EventQuery;
 import org.keycloak.events.EventStoreProvider;
 import org.keycloak.events.EventType;
 import org.keycloak.models.ClientModel;
@@ -67,7 +69,10 @@ public class AccountActivitiesResource implements RealmResourceProvider {
   @Path("events")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getEvents(
-      @QueryParam("first") Integer first, @QueryParam("max") Integer max, @Context HttpHeaders headers) {
+      @QueryParam("first") Integer first,
+      @QueryParam("max") Integer max,
+      @QueryParam("days") String days,
+      @Context HttpHeaders headers) {
     RealmModel realm = session.getContext().getRealm();
     ClientModel accountClient = realm.getClientByClientId(Constants.ACCOUNT_MANAGEMENT_CLIENT_ID);
     if (accountClient == null || !accountClient.isEnabled()) {
@@ -81,20 +86,24 @@ public class AccountActivitiesResource implements RealmResourceProvider {
 
     int firstResult = first == null ? 0 : Math.max(first, 0);
     int maxResults = max == null ? DEFAULT_MAX_RESULTS : Math.min(Math.max(max, 1), MAX_ALLOWED_RESULTS);
+    Date fromDate = toFromDate(days);
 
     EventStoreProvider store = session.getProvider(EventStoreProvider.class);
     List<AccountActivity> activities = new ArrayList<>();
     if (store != null) {
-      // Scoped to the caller's own user id on purpose.
-      try (var events =
+      EventQuery query =
           store
               .createQuery()
               .realm(realm.getId())
               .user(user.getId())
               .orderByDescTime()
               .firstResult(firstResult)
-              .maxResults(maxResults)
-              .getResultStream()) {
+              .maxResults(maxResults);
+      if (fromDate != null) {
+        query = query.fromDate(fromDate);
+      }
+
+      try (var events = query.getResultStream()) {
         events.map(this::toAccountActivity).forEach(activities::add);
       }
     }
@@ -104,6 +113,23 @@ public class AccountActivitiesResource implements RealmResourceProvider {
     result.put("max", maxResults);
     result.put("events", activities);
     return Response.ok(result).build();
+  }
+
+  private Date toFromDate(String days) {
+    if (days == null || days.isBlank() || "all".equalsIgnoreCase(days)) {
+      return null;
+    }
+
+    try {
+      int parsedDays = Integer.parseInt(days);
+      if (parsedDays <= 0) {
+        return null;
+      }
+      long fromTime = System.currentTimeMillis() - parsedDays * 24L * 60L * 60L * 1000L;
+      return new Date(fromTime);
+    } catch (NumberFormatException ignored) {
+      return null;
+    }
   }
 
   /**
