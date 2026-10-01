@@ -120,6 +120,34 @@ The build runs `npm install` → `vite build` → `mvn package`, which bundles `
 `maven-resources/` into `target/khalibre-account-ui-26.1.3.jar`. The JAR is then copied to
 `keycloak-providers/`, so `mise run start` picks it up automatically.
 
+### Local development (HMR)
+
+For quick iteration, run the Vite dev server and let Keycloak serve the account console from it —
+no JAR rebuild, no redeploy:
+
+```bash
+mise run dev:account-ui          # Vite on 0.0.0.0:5173 + Keycloak with KC_ACCOUNT_VITE_URL
+mise run dev:account-ui:stop     # back to the bundled theme JAR
+```
+
+Then open `https://<KEYCLOAK_HOST>/realms/<realm>/account` — the task prints the exact URL.
+Do **not** open `http://localhost:5173` in the browser: it returns 404 by design, because
+Keycloak injects the dev-server scripts into the account page rather than serving the app itself.
+
+How it works: in dev mode (`start-dev`) Keycloak exposes `KC_ACCOUNT_VITE_URL` to the account
+theme as the `devServerUrl` template variable, and `index.ftl` then loads `/@vite/client`,
+`/@react-refresh`, `/@vite-plugin-checker-runtime` and `/src/main.tsx` from that URL. No
+requests are proxied through Keycloak, so the URL has to be reachable from the browser:
+`http://localhost:5173` (not `host.docker.internal`, which only resolves inside Docker), and Vite
+must listen on `0.0.0.0` as the task does. The HMR websocket also connects directly to
+`http://localhost:5173`.
+
+This uses `docker-compose.dev-account-ui.yml` as a compose overlay, which sets
+`KC_ACCOUNT_VITE_URL` on the `keycloak` service. Dependencies are installed on first run; if `npm`
+is not found, the task loads nvm.
+
+Use `mise run deploy:khalibre-account-ui` when you want the change baked into the theme JAR.
+
 ## Backup and Restore
 
 **Export Database**:
