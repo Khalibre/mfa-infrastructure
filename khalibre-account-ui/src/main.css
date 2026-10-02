@@ -1,44 +1,59 @@
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("./fonts/plus-jakarta-sans-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+  U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+  U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("./fonts/plus-jakarta-sans-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+  U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0,
+  U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 :root {
-  --edc-primary: #2c327e;
+  --edc-font: "Plus Jakarta Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, Helvetica,
+  Arial, sans-serif;
+  --edc-navy: #2b3072;
+  --edc-navy-hover: #22275c;
+  --edc-navy-soft: #eef0fb;
+  --edc-navy-border: #b9bfee;
+  --edc-ink: #14162b;
+  --edc-body: #5b6478;
+  --edc-muted: #8b94a7;
+  --edc-bg: #f4f5f9;
+  --edc-card: #ffffff;
+  --edc-border: #d7dae2;
+  --edc-amber-bg: #fdf7e6;
+  --edc-amber-bar: #d9a300;
+  --edc-amber-ink: #6b5410;
+  --edc-danger: #c0392b;
+  --edc-danger-bg: #fdf0ef;
+  --edc-danger-border: #f2c9c4;
 
-  --color-dark: var(--pf-v5-global--Color--100);
-  --color-dark-100: var(--pf-v5-global--Color--200);
-  --color-dark-200: var(--pf-v5-global--BorderColor--200);
-  --color-dark-300: var(--pf-v5-global--BorderColor--300);
-  --color-dark-400: var(--pf-v5-global--BorderColor--400);
+  --edc-bg-account: #f0f0f0;
+  --edc-bg-hover: #f2f3f9;
+  --edc-bg-blue-light: #E7F1FA;
 
-  --bg-white: var(--pf-v5-global--BackgroundColor--100);
-  --bg-color: #f0f0f0;
+  --border-sidebar: #D9D9D9;
+  --border-table-row: #ececec;
+  --border-input: #adadad;
 
-  --bg-edc-primary: #f2f3f9;
-  --bg-blue-light: var(--pf-v5-global--palette--blue-50);
+  --text-gray: #6a6e73;
+  --text-black: #151515;
 
-  --text-color: var(--pf-v5-global--Color--200);
-
+  /*Sizing*/
   --border-radius-md: 0.3rem;
-  --border-color-dark-300: var(--pf-v5-global--BorderColor--300);
 
   --space-size-sm: 0.5rem;
   --space-size-md: 1rem;
-
-  --pf-v5-c-page__main-section--m-light--BackgroundColor: var(--bg-color) !important;
-}
-
-.pf-v5-theme-dark {
-  --edc-primary: unset;
-  --pf-v5-c-page__main-section--m-light--BackgroundColor: var(--pf-v5-global--BackgroundColor--200);
-
-  --color-dark: var(--pf-v5-global--Color--100);
-  --color-dark-100: var(--pf-v5-global--Color--200);
-  --color-dark-200: var(--pf-v5-global--BorderColor--100);
-  --color-dark-300: var(--pf-v5-global--BorderColor--200);
-  --color-dark-400: var(--pf-v5-global--BorderColor--300);
-
-  --bg-white: var(--pf-v5-global--BackgroundColor--300);
-  --bg-color: var(--pf-v5-global--BackgroundColor--200);
-
-  --bg-edc-primary: var(--pf-v5-c-nav__link--hover--BackgroundColor);
-  --bg-blue-light: var(--pf-v5-c-nav__link--hover--BackgroundColor);
-
-  --text-color: var(--pf-v5-global--Color--100);
 }
